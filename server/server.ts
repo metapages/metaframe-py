@@ -17,32 +17,32 @@ interface UrlEncodedConfigV1 {
   modules: string[];
 }
 
-export const urlToConfig = (url: URL) : Config => {
-  const version :string | null = url.searchParams.get("v");
-  const encodedConfigString :string | null = url.searchParams.get("c");
+export const urlToConfig = (url: URL): Config => {
+  const version: string | null = url.searchParams.get("v");
+  const encodedConfigString: string | null = url.searchParams.get("c");
   if (!version || !encodedConfigString) {
-      return {modules: []};
+    return { modules: [] };
   }
-  switch(version) {
-      case "1":
-          return urlTokenV1ToConfig(encodedConfigString);
-      default:
-          return {modules: []};
+  switch (version) {
+    case "1":
+      return urlTokenV1ToConfig(encodedConfigString);
+    default:
+      return { modules: [] };
   }
-}
+};
 
-export const configToUrl = (url:URL, config: Config) : URL => {
+export const configToUrl = (url: URL, config: Config): URL => {
   // On new versions, this will need conversion logic
   url.searchParams.set("v", "1");
   url.searchParams.set("c", blobToBase64String(config));
   return url;
-}
+};
 
-const urlTokenV1ToConfig = (encoded: string) : Config => {
+const urlTokenV1ToConfig = (encoded: string): Config => {
   const configV1: UrlEncodedConfigV1 = blobFromBase64String(encoded);
   // No need to case because it's the same FOR NOW
   return configV1;
-}
+};
 
 const CACHE = new LRU<string>(500); // define your max amount of entries, in this example is 500
 
@@ -186,7 +186,13 @@ const handler = (request: Request): Response => {
     const config: Config = urlToConfig(url);
     template[0] =
       template[0] +
-      config.modules.map((m) => `<script src="${m}" crossorigin="anonymous"></script>`).join("\n");
+      config.modules
+        .map((m) =>
+          m.endsWith(".css")
+            ? `<link rel="stylesheet" type="text/css" href="${m}" crossorigin="anonymous">`
+            : `<script src="${m}" crossorigin="anonymous"></script>`
+        )
+        .join("\n");
   } catch (err) {
     // err
     template[2] = `<div>Error parsing URL config:\n\n${err}\n</div>`;
