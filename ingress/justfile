@@ -1,0 +1,34 @@
+set shell                          := ["bash", "-c"]
+set dotenv-load                    := true
+export APP_FQDN := env_var_or_default("APP_FQDN", "server1.localhost")
+export APP_PORT := env_var_or_default("APP_PORT", "4430")
+# If this isn't custom to the project, then conflicts occur
+export DOCKER_COMPOSE_PROJECT_NAME := env_var_or_default("DOCKER_COMPOSE_PROJECT_NAME", `basename $(dirname $PWD)`)
+# Default to the local development stack, publishing typically is only DOCKER_COMPOSE="docker-compose -f docker-compose.yml"
+DOCKER_COMPOSE_ARGS                := env_var_or_default("DOCKER_COMPOSE_ARGS", "-f docker-compose.yml -f docker-compose.override.yml")
+DOCKER_COMPOSE_COMMAND             := env_var_or_default("DOCKER_COMPOSE_COMMAND", "docker-compose -p " + DOCKER_COMPOSE_PROJECT_NAME)
+bold                               := '\033[1m'
+normal                             := '\033[0m'
+
+@_help:
+    just --list
+
+# all one-off tasks to get started. idempotent
+@init: mkcert
+
+# DEV: generate TLS certs for HTTPS over localhost https://blog.filippo.io/mkcert-valid-https-certificates-for-localhost/
+@mkcert:
+    APP_FQDN={{APP_FQDN}} CERTS_DIR=conf.d/certs deno run --allow-all --unstable https://deno.land/x/metapages@v0.0.6/commands/ensure_mkcert.ts
+
+@clean:
+    rm -rf conf.d/certs/*
+    rm -rf conf.d/default.conf
+
+# Reload configuration (assumes the docker-compose stack is running)
+@reload:
+    envsubst '$APP_FQDN $APP_PORT' < default.template.conf > conf.d/default.conf
+    cd ../.. && {{DOCKER_COMPOSE_COMMAND}} {{DOCKER_COMPOSE_ARGS}} exec https nginx -s reload
+
+# Watch and reload
+@watch:
+    watchexec -w default.template.conf -- just reload

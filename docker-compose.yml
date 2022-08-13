@@ -1,0 +1,86 @@
+version: "2.4"
+
+services:
+
+  # https ingress routing to the server
+  ingress:
+    build:
+      context: ingress
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail http://localhost:80/healthcheck || exit 1
+      interval: 5s
+      timeout: 1s
+    environment:
+      - "APP_FQDN=${APP_FQDN:-app1.dev}"
+      - "PORT=${APP_PORT:-443}"
+    command: /start.sh
+    networks:
+      - default
+    logging:
+      driver: ${LOGGING_INGRESS:-local}
+    volumes:
+      - ./ingress/conf.d:/etc/nginx/conf.d
+      - ./ingress:/app/ingress
+      - ./ingress/start.sh:/start.sh
+    ports:
+      - "${APP_PORT:-443}:${APP_PORT:-443}"
+
+  server:
+    build:
+      context: server
+    healthcheck:
+      test: curl --fail http://localhost:8000/healthz || exit 1
+      interval: 5s
+      timeout: 1s
+    environment:
+      - "DENO_DIR=/root/.cache/deno"
+    command: just dev
+    volumes:
+      - deno:/root/.cache/deno
+      - ./server/justfile:/app/server/justfile
+      - ./server/server.ts:/app/server/server.ts
+      - ./client/src:/app/client/src
+    logging:
+      driver: ${LOGGING_SERVER:-local}
+    networks:
+      - default
+
+  client:
+    build:
+      context: client
+    environment:
+      - "APP_BROWSER_PORT=${APP_BROWSER_PORT:-4440}"
+      - "APP_FQDN=${APP_FQDN:-server1.localhost}"
+      - "APP_PORT=${APP_PORT:-4430}"
+    command: just dev
+    volumes:
+      - node_modules:/app/client/node_modules
+      - ./ingress/conf.d/certs:/app/client/.certs
+      - ./client/index.html:/app/client/index.html
+      - ./client/justfile:/app/client/justfile
+      - ./client/package-lock.json:/app/client/package-lock.json
+      - ./client/package.json:/app/client/package.json
+      - ./client/public:/app/client/public
+      - ./client/src:/app/client/src
+      - ./client/tsconfig.json:/app/client/tsconfig.json
+      - ./client/vite.config.ts:/app/client/vite.config.ts
+      - .git:/app/.git
+    logging:
+      driver: ${LOGGING_CLIENT:-local}
+    networks:
+      - default
+    ports:
+      - "${APP_PORT_BROWSER:-4440}:${APP_PORT_BROWSER:-4440}"
+
+volumes:
+  deno:
+    driver: local
+  node_modules:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

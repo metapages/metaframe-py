@@ -1,0 +1,9 @@
+set shell       := ["bash", "-c"]
+set dotenv-load := true
+
+@_help:
+    just --list --unsorted
+
+dev:
+    watchexec --restart -w ../client/src/shared -w server.ts -w justfile -- \
+        deno run --allow-net server.ts
