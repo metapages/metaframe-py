@@ -186,7 +186,7 @@ const handler = (request: Request): Response => {
     const config: Config = urlToConfig(url);
     template[0] =
       template[0] +
-      config.modules.map((m) => `<script src="${m}"></script>`).join("\n");
+      config.modules.map((m) => `<script src="${m}" crossorigin="anonymous"></script>`).join("\n");
   } catch (err) {
     // err
     template[2] = `<div>Error parsing URL config:\n\n${err}\n</div>`;
