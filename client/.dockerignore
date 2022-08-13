@@ -1,0 +1,8 @@
+**/.certs
+**/.dockerignore
+**/.env
+**/.gitignore
+**/.tmp
+**/dist
+**/Dockerfile
+**/node_modules
