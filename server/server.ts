@@ -1,5 +1,9 @@
 import { serve } from "https://deno.land/std@0.151.0/http/server.ts";
 import { LRU } from "https://deno.land/x/lru@1.0.2/mod.ts";
+import {
+  blobFromBase64String,
+  blobToBase64String,
+} from "https://esm.sh/@metapages/hash-query@0.3.12"; // 💕 u deno
 // MANUALLY COPYING FOR NOW HOW UGH
 // import { Config, urlToConfig } from "../client/src/shared/config.ts";
 // https://github.com/denoland/deploy_feedback/issues/264
@@ -30,18 +34,15 @@ export const urlToConfig = (url: URL) : Config => {
 export const configToUrl = (url:URL, config: Config) : URL => {
   // On new versions, this will need conversion logic
   url.searchParams.set("v", "1");
-  url.searchParams.set("c", btoa(JSON.stringify(config)));
+  url.searchParams.set("c", blobToBase64String(config));
   return url;
 }
 
 const urlTokenV1ToConfig = (encoded: string) : Config => {
-  const configV1: UrlEncodedConfigV1 = JSON.parse(atob(encoded));
+  const configV1: UrlEncodedConfigV1 = blobFromBase64String(encoded);
   // No need to case because it's the same FOR NOW
   return configV1;
 }
-
-
-
 
 const CACHE = new LRU<string>(500); // define your max amount of entries, in this example is 500
 
@@ -130,7 +131,8 @@ const HTML_TEMPLATE = [
     const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
     if (hashParams.js) {
       (async () => {
-        const result = await execJsCode(hashParams.js, {});
+        const js = atob(hashParams.js);
+        const result = await execJsCode(js, {});
         if (result.failure) {
           document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
         }

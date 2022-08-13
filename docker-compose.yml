@@ -55,10 +55,11 @@ services:
       - "APP_BROWSER_PORT=${APP_BROWSER_PORT:-4440}"
       - "APP_FQDN=${APP_FQDN:-server1.localhost}"
       - "APP_PORT=${APP_PORT:-4430}"
-    command: just dev
+      # - "SERVER_ORIGIN=${APP_FQDN:-server1.localhost}:${APP_PORT:-4430}"
+    command: just dev ${APP_FQDN:-server1.localhost}:${APP_PORT:-4430}
     volumes:
       - node_modules:/app/client/node_modules
-      - ./ingress/conf.d/certs:/app/client/.certs
+      - ./ingress/conf.d/certs:/app/.certs
       - ./client/index.html:/app/client/index.html
       - ./client/justfile:/app/client/justfile
       - ./client/package-lock.json:/app/client/package-lock.json
