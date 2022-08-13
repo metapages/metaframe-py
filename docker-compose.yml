@@ -14,7 +14,7 @@ services:
       interval: 5s
       timeout: 1s
     environment:
-      - "APP_FQDN=${APP_FQDN:-app1.dev}"
+      - "APP_FQDN=${APP_FQDN:-server1.localhost}"
       - "PORT=${APP_PORT:-443}"
     command: /start.sh
     networks:
