@@ -22,6 +22,9 @@ dev services="":
     @open https://${APP_FQDN}:${APP_BROWSER_PORT};
     docker-compose up {{services}}
 
+@publish:
+    just client/publish
+
 open:
     open https://${APP_FQDN}:${APP_PORT_BROWSER:-4440}
 
