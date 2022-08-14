@@ -52,9 +52,12 @@ const HTML_TEMPLATE = [
   <head>
     <meta charset="utf-8">
     <title>Metaframe JS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.9.0/browser/metaframe/index.js"></script>
 `,
   `
   <script>
+  var metaframe = new metapage.Metaframe();
+
   const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor
 
   const execJsCode = (code, context) => {
