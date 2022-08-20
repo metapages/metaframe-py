@@ -1,11 +1,15 @@
 // Shared between client and server
 
+import { MetaframeDefinition } from "@metapages/metapage";
+
 export interface Config {
     modules: string[];
+    definition?: MetaframeDefinition;
 }
 
 interface UrlEncodedConfigV1 {
     modules: string[];
+    definition?: MetaframeDefinition;
 }
 
 export const urlToConfig = (url: URL) : Config => {

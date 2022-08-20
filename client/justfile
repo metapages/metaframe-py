@@ -60,7 +60,7 @@ dev server="metaframe-js.deno.dev:443": _mkcert _ensure_npm_modules  (_tsc "--bu
     export PORT={{APP_BROWSER_PORT}}
     export CERT_FILE=../.certs/{{APP_FQDN}}.pem
     export CERT_KEY_FILE=../.certs/{{APP_FQDN}}-key.pem
-    export BASE=test
+    export BASE=
     # export OUTDIR=
     VITE_SERVER_ORIGIN=${VITE_SERVER_ORIGIN} {{vite}} --clearScreen false
 
@@ -111,11 +111,9 @@ _build BASE="": _ensure_npm_modules _mkcert
 _tsc +args="": _ensure_npm_modules
     {{tsc}} {{args}}
 
-_mkcert:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if [ ! -f /.dockerenv ]; then
-        just ../ingress/mkcert
+@_mkcert:
+    if [ ! -f /.dockerenv ]; then \
+        just ../ingress/mkcert;\
     fi
 
 @_ensure_npm_modules:
@@ -163,7 +161,7 @@ _githubpages_publish: _ensureGitPorcelain
     echo -e "    - {{green}}Branch{{normal}}: gh-pages 📁 /docs"
 
 @_ensureGitPorcelain:
-    deno run --allow-all --unstable https://deno.land/x/metapages@v0.0.4/git/git_fail_if_uncommitted_files.ts
+    deno run --allow-all --unstable https://deno.land/x/metapages@v0.0.6/git/git_fail_if_uncommitted_files.ts
 
 @_require_NPM_TOKEN:
 	if [ -z "{{NPM_TOKEN}}" ]; then echo "Missing NPM_TOKEN env var"; exit 1; fi

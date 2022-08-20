@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import {
   IconButton,
   VStack,
@@ -17,10 +18,20 @@ const validationSchema = yup.object({
   modules: yup.array().of(yup.string()),
 });
 
-export const ModuleChooser: React.FC<{
+interface FormType
+  extends yup.InferType<typeof validationSchema> {}
+
+export const FormModulesAndCss: React.FC<{
   config: Config;
   setConfig: (config: Config) => void;
 }> = ({ config, setConfig }) => {
+  const onSubmit = useCallback(
+    (values: FormType) => {
+      setConfig({ ...config, modules: values.modules });
+    },
+    [config, setConfig]
+  );
+
   return (
     <VStack width="100%" alignItems="flex-start">
       <Heading size="sm">
@@ -36,9 +47,7 @@ export const ModuleChooser: React.FC<{
       >
         <Formik
           initialValues={config}
-          onSubmit={(values) => {
-            setConfig({ ...config, modules: values.modules });
-          }}
+          onSubmit={onSubmit}
           validationSchema={validationSchema}
         >
           {({ values, handleSubmit }) => (
@@ -89,7 +98,7 @@ export const ModuleChooser: React.FC<{
                         mr="4"
                       />
 
-                      <Button type="submit">Submit</Button>
+                      <Button type="submit">Update</Button>
                     </HStack>
                   </>
                 )}

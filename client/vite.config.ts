@@ -11,22 +11,6 @@ const BASE: string | undefined = process.env.BASE;
 const OUTDIR: string | undefined = process.env.OUTDIR;
 const INSIDE_CONTAINER: boolean = fs.existsSync("/.dockerenv");
 
-console.log('CERT_KEY_FILE', CERT_KEY_FILE);
-if (CERT_KEY_FILE) {
-  console.log('fs.existsSync(CERT_KEY_FILE)', fs.existsSync(CERT_KEY_FILE));
-}
-
-// const GithubPages_BUILD_SUB_DIR: string = process.env.BUILD_SUB_DIR || "";
-// const fileKey: string = `./.certs/${APP_FQDN}-key.pem`;
-// const fileCert: string = `./.certs/${APP_FQDN}.pem`;
-
-// Get the github pages path e.g. if served from https://<name>.github.io/<repo>/
-// then we need to pull out "<repo>"
-// const packageName = JSON.parse(
-//   fs.readFileSync("./package.json", { encoding: "utf8", flag: "r" })
-// )["name"];
-// const GithubPages_baseWebPath = packageName.split("/")[1];
-
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => ({
   // For serving NOT at the base path e.g. with github pages: https://<user_or_org>.github.io/<repo>/

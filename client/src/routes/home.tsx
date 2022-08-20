@@ -15,7 +15,8 @@ import {
   stringToBase64String,
   useHashParamBase64,
 } from "@metapages/hash-query";
-import { ModuleChooser } from "./ModuleChooser";
+import { FormModulesAndCss } from "./FormModulesAndCss";
+import { FormDefinition } from './FormDefinition';
 import { MetapageUrl } from "./MetapageUrl";
 
 export const Route: React.FC = () => {
@@ -56,8 +57,9 @@ export const Route: React.FC = () => {
   return (
     <VStack padding={10} alignItems="flex-start" width="100%">
       <SimpleGrid columns={2} spacing={10} width="100%">
-        <ModuleChooser config={config} setConfig={setConfig} />
+        <FormModulesAndCss config={config} setConfig={setConfig} />
         <MetapageUrl url={url} />
+        <FormDefinition config={config} setConfig={setConfig} />
       </SimpleGrid>
       <HStack rounded="md" width="100%" alignItems="flex-start"></HStack>
 
