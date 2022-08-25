@@ -4,74 +4,19 @@ import {
   blobFromBase64String,
   blobToBase64String,
 } from "https://esm.sh/@metapages/hash-query@0.3.12"; // 💕 u deno
-
-export type MetaframePipeDefinition = {
-  type?: string;
-};
-
-export type MetaframeEditType = "metapage" | "metaframe";
-
-export type MetaframeEditTypeMetaframe = {
-  url: string;
-  // from the target metaframe to the edit metaframe
-  // we can only get hash params from the edit metaframe but those
-  // might map to path or search elements on the target metaframe
-  params?: {
-    from: string; // this is a hash param, it's the only param we can get from a metaframe
-    to: string;
-    toType?: "search" | "hash" | "path";
-  }[];
-};
-
-// the metaframe name to get the hash params is "edit"
-export type MetaframeEditTypeMetapage = {
-  definition: undefined;
-  key?: string; // default is "edit"
-};
-
-export type MetaframeMetadataV4 = {
-  version?: string;
-  title?: string;
-  author?: string;
-  image?: string;
-  descriptionUrl?: string;
-  keywords?: string[];
-  iconUrl?: string;
-};
-
-export type MetaframeMetadataV5 = {
-  name?: string;
-  description?: string;
-  author?: string;
-  image?: string;
-  tags?: string[];
-  edit?: {
-    type: MetaframeEditType;
-    value: MetaframeEditTypeMetaframe | MetaframeEditTypeMetapage;
-  };
-};
-
-export interface MetaframeDefinitionV5 {
-  version: string;
-  inputs?: {
-    [key: string]: MetaframePipeDefinition;
-  }; // <MetaframePipeId, MetaframePipeDefinition>
-  outputs?: {
-    [key: string]: MetaframePipeDefinition;
-  }; // <MetaframePipeId, MetaframePipeDefinition>
-  metadata?: MetaframeMetadataV5;
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Feature_Policy/Using_Feature_Policy#the_iframe_allow_attribute
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy#directives
-  allow?: string;
-}
-
-// import {
-//   MetaframeDefinitionV5
-// } from "https://esm.sh/@metapages/metapage@0.10.0"; // 💕 u deno
-// MANUALLY COPYING FOR NOW HOW UGH
-// import { Config, urlToConfig } from "../client/src/shared/config.ts";
-// https://github.com/denoland/deploy_feedback/issues/264
-// Shared between client and server
+import {
+  MetaframeDefinitionV5,
+  MetaframeDefinitionV4,
+  VersionsMetaframe,
+} from "https://esm.sh/@metapages/metapage@0.11.9";
+import mp from "https://esm.sh/@metapages/metapage@0.11.9";
+// @ts-ignore: packaging of types is somehow borked
+// I cannot just import this from https://esm.sh/@metapages/metapage@0.11.9
+// instead I have to do this, like WTF is it a packaging issue their end
+// or my own packaging issue
+const convertMetaframeJsonToCurrentVersion = mp.convertMetaframeJsonToCurrentVersion as (
+  m: MetaframeDefinitionV5 | MetaframeDefinitionV4
+)=> MetaframeDefinitionV5;
 
 export interface Config {
   modules: string[];
@@ -108,6 +53,16 @@ const urlTokenV1ToConfig = (encoded: string): Config => {
   const configV1: UrlEncodedConfigV1 = blobFromBase64String(encoded);
   // No need to case because it's the same FOR NOW
   return configV1;
+};
+
+const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV5 = {
+  // @ts-ignore: failure to properly import the types
+  version: "0.5",//VersionsMetaframe.V0_5,//MetaframeVersionCurrent,
+  metadata: {
+    name: "Javascript code runner",
+  },
+  inputs: {},
+  outputs: {},
 };
 
 const CACHE = new LRU<string>(500); // define your max amount of entries, in this example is 500
@@ -221,39 +176,33 @@ const handler = (request: Request): Response => {
     return new Response("OK", { status: 200 });
   }
 
-
-
   if (url.pathname.endsWith("/metaframe.json")) {
-    // if (CACHE.get(url.href)) {
-    //   const cachedBody: string = CACHE.get(url.href)!;
-    //   const response = new Response(cachedBody, { status: 200 });
-    //   response.headers.set("Access-Control-Allow-Origin", "*");
-    //   response.headers.set("Content-Type", "application/json");
-    //   return response;
-    // }
+    if (CACHE.get(url.href)) {
+      const cachedBody: string = CACHE.get(url.href)!;
+      const response = new Response(cachedBody, { status: 200 });
+      response.headers.set("Access-Control-Allow-Origin", "*");
+      response.headers.set("Content-Type", "application/json");
+      return response;
+    }
+
 
     const config: Config = urlToConfig(url);
-    console.log('config', config);
-    config.definition = config.definition || {
-      version: "0.4",
-      metadata: {
-        name: "Javascript code runner",
-      },
-      inputs: {},
-      outputs: {},
-    };
+    const metaframeDefinition: MetaframeDefinitionV5 =
+      convertMetaframeJsonToCurrentVersion(
+        config.definition || DEFAULT_METAFRAME_DEFINITION
+      );
 
-    config.definition.metadata = config.definition.metadata
-      ? config.definition.metadata
+    metaframeDefinition.metadata = metaframeDefinition.metadata
+      ? metaframeDefinition.metadata
       : {};
-    config.definition.metadata.edit = {
+    metaframeDefinition.metadata.edit = {
       type: "metaframe",
       value: {
         url: "https://metapages.github.io/metaframe-generic-js-runtime/",
         params: [
           {
             from: "js",
-            to: "js"
+            to: "js",
           },
           {
             from: "v",
@@ -269,7 +218,7 @@ const handler = (request: Request): Response => {
       },
     };
 
-    const body = JSON.stringify(config.definition, null, "  ");
+    const body = JSON.stringify(metaframeDefinition, null, "  ");
     CACHE.set(url.href, body);
 
     const response = new Response(body, { status: 200 });
