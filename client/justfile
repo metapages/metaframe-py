@@ -3,13 +3,14 @@
 ###############################################################
 # just docs: https://github.com/casey/just
 set shell                          := ["bash", "-c"]
+set dotenv-load                    := true
 # Change this to anything else to NOT publish a seperate npm module
 NPM_PUBLISH                        := "true"
 # E.g. 'my.app.com'. Some services e.g. auth need know the external endpoint for example OAuth
 # The root domain for this app, serving index.html
 export APP_FQDN                    := env_var_or_default("APP_FQDN", "server1.localhost")
 export APP_PORT                    := env_var_or_default("APP_PORT", "4430")
-export APP_BROWSER_PORT            := env_var_or_default("APP_BROWSER_PORT", "4440")
+export APP_PORT_BROWSER            := env_var_or_default("APP_PORT_BROWSER", "4440")
 # SERVER_ORIGIN allows overriding the target server origin for the browser
 export SERVER_ORIGIN               := env_var_or_default("SERVER_ORIGIN", "metaframe-js.deno.dev:443")
 # ROOT                               := env_var_or_default("GITHUB_WORKSPACE", `git rev-parse --show-toplevel`)
@@ -57,7 +58,7 @@ dev server="metaframe-js.deno.dev:443": _mkcert _ensure_npm_modules  (_tsc "--bu
     fi
     npm i
     export HOST={{APP_FQDN}}
-    export PORT={{APP_BROWSER_PORT}}
+    export PORT={{APP_PORT_BROWSER}}
     export CERT_FILE=../.certs/{{APP_FQDN}}.pem
     export CERT_KEY_FILE=../.certs/{{APP_FQDN}}-key.pem
     export BASE=
@@ -103,6 +104,8 @@ _build BASE="": _ensure_npm_modules _mkcert
     export OUTDIR=../docs
 
     mkdir -p ${OUTDIR}
+    # Only delete the files and assets folder so we can keep previous versions
+    # in v<version/ child directories
     find ${OUTDIR} -maxdepth 1 -type f -exec rm "{}" \;
     rm -rf $(echo "${OUTDIR}/assets" | sed s#//*#/#g)
     VITE_SERVER_ORIGIN={{SERVER_ORIGIN}} {{vite}} build --mode=production

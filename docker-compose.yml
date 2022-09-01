@@ -52,7 +52,7 @@ services:
     build:
       context: client
     environment:
-      - "APP_BROWSER_PORT=${APP_BROWSER_PORT:-4440}"
+      - "APP_PORT_BROWSER=${APP_PORT_BROWSER:-4440}"
       - "APP_FQDN=${APP_FQDN:-server1.localhost}"
       - "APP_PORT=${APP_PORT:-4430}"
       # - "SERVER_ORIGIN=${APP_FQDN:-server1.localhost}:${APP_PORT:-4430}"

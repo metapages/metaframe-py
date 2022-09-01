@@ -2,7 +2,7 @@ set shell               := ["bash", "-c"]
 set dotenv-load         := true
 export APP_FQDN         := env_var_or_default("APP_FQDN", "server1.localhost")
 export APP_PORT         := env_var_or_default("APP_PORT", "4430")
-export APP_BROWSER_PORT := env_var_or_default("APP_BROWSER_PORT", "4440")
+export APP_PORT_BROWSER := env_var_or_default("APP_PORT_BROWSER", "4440")
 # minimal formatting, bold is very useful
 bold                               := '\033[1m'
 normal                             := '\033[0m'
@@ -19,7 +19,7 @@ dev services="":
     @just ingress/mkcert
     docker-compose build {{services}}
     docker-compose down
-    @open https://${APP_FQDN}:${APP_BROWSER_PORT};
+    @open https://${APP_FQDN}:${APP_PORT_BROWSER};
     docker-compose up {{services}}
 
 @publish:

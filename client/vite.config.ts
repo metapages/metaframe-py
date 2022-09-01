@@ -15,9 +15,6 @@ const INSIDE_CONTAINER: boolean = fs.existsSync("/.dockerenv");
 export default defineConfig(({ command, mode }) => ({
   // For serving NOT at the base path e.g. with github pages: https://<user_or_org>.github.io/<repo>/
   base: BASE,
-  // GithubPages_BUILD_SUB_DIR !== ""
-  //     ? `/${GithubPages_baseWebPath}/${GithubPages_BUILD_SUB_DIR}/`
-  //     : `/${GithubPages_baseWebPath}/`,
   resolve: {
     alias: {
       "/@": resolve(__dirname, "./src"),
@@ -29,12 +26,10 @@ export default defineConfig(({ command, mode }) => ({
 
   esbuild: {
     logOverride: { "this-is-undefined-in-esm": "silent" },
-    jsxInject: `import React from 'react'`,
   },
 
   build: {
     outDir: OUTDIR ?? "./dist",
-    // `../docs/${GithubPages_BUILD_SUB_DIR}`,
     target: "esnext",
     sourcemap: true,
     minify: mode === "development" ? false : "esbuild",
