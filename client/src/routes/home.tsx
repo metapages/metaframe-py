@@ -8,12 +8,13 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { MetaframeStandaloneComponent } from "@metapages/metapage-embed-react";
-import { Config, configToUrl, urlToConfig } from "../shared/config";
+import { Config, configToUrl } from "../shared/config";
 import { MetaframeInputMap } from "@metapages/metapage";
 import {
   setHashValueInHashString,
   stringToBase64String,
   useHashParamBase64,
+  useHashParamJson,
 } from "@metapages/hash-query";
 import { FormModulesAndCss } from "./FormModulesAndCss";
 import { FormDefinition } from './FormDefinition';
@@ -21,9 +22,8 @@ import { MetapageUrl } from "./MetapageUrl";
 
 export const Route: React.FC = () => {
   const [code, setCode] = useHashParamBase64("js");
-  const [config, setConfig] = useState<Config>(
-    urlToConfig(new URL(window.location.href))
-  );
+  const [config, setConfig] = useHashParamJson<Config>("c", {modules: []});
+  // This is the actual metaframe URL to export
   const [url, setUrl] = useState<string>();
 
   // update the url
@@ -33,6 +33,9 @@ export const Route: React.FC = () => {
     url.pathname = "";
     url.host = import.meta.env.VITE_SERVER_ORIGIN.split(":")[0];
     url.port = import.meta.env.VITE_SERVER_ORIGIN.split(":")[1];
+
+    // WATCH THIS DIFFERENCE BETWEEN THIS AND BELOW
+    // 1!
     if (code) {
       url.hash = setHashValueInHashString(
         url.hash,
@@ -42,9 +45,6 @@ export const Route: React.FC = () => {
     }
     setUrl(url.href);
 
-    const thisWindowUrl = new URL(window.location.href);
-    configToUrl(thisWindowUrl, config);
-    window.history.replaceState({}, "", thisWindowUrl.href);
   }, [config, code, setUrl]);
 
   const onCodeOutputsUpdate = useCallback(

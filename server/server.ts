@@ -7,7 +7,6 @@ import {
 import {
   MetaframeDefinitionV5,
   MetaframeDefinitionV4,
-  VersionsMetaframe,
 } from "https://esm.sh/@metapages/metapage@0.11.9";
 import mp from "https://esm.sh/@metapages/metapage@0.11.9";
 // @ts-ignore: packaging of types is somehow borked
