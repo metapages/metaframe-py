@@ -138,7 +138,7 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
         params: [
           {
             metaframe: "code",
-            from: "value",
+            from: "text",
             to: "js",
           },
         ],
