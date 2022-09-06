@@ -6,8 +6,7 @@
     "url": "https://github.com/metapages/metaframe-generic-js-runtime"
   },
   "files": [
-    "dist/**/*",
-    "src/lib/**/*"
+    "dist/**/*"
   ],
   "type": "module",
   "types": "dist/index.d.ts",
@@ -25,10 +24,10 @@
     "@chakra-ui/react": "^2.2.4",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
-    "@metapages/hash-query": "^0.3.12",
-    "@metapages/metaframe-hook": "^0.6.16",
-    "@metapages/metapage": "^0.8.4",
-    "@metapages/metapage-embed-react": "^0.0.14",
+    "@metapages/hash-query": "^0.4.3",
+    "@metapages/metaframe-hook": "^1.0.9",
+    "@metapages/metapage": "^0.12.0",
+    "@metapages/metapage-embed-react": "^0.0.16",
     "formik": "^2.2.9",
     "formik-chakra-ui": "^1.6.0",
     "framer-motion": "^6.3.4",

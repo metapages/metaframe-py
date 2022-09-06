@@ -56,7 +56,7 @@ dev server="metaframe-js.deno.dev:443": _mkcert _ensure_npm_modules  (_tsc "--bu
         VITE_SERVER_ORIGIN={{server}}
         echo "Browser development pointing to: ${VITE_SERVER_ORIGIN}"
     fi
-    npm i
+    # npm i
     export HOST={{APP_FQDN}}
     export PORT={{APP_PORT_BROWSER}}
     export CERT_FILE=../.certs/{{APP_FQDN}}.pem

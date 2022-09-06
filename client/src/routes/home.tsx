@@ -13,16 +13,18 @@ import { MetaframeInputMap } from "@metapages/metapage";
 import {
   setHashValueInHashString,
   stringToBase64String,
+  useHashParam,
   useHashParamBase64,
   useHashParamJson,
 } from "@metapages/hash-query";
 import { FormModulesAndCss } from "./FormModulesAndCss";
-import { FormDefinition } from './FormDefinition';
+import { FormDefinition } from "./FormDefinition";
 import { MetapageUrl } from "./MetapageUrl";
 
 export const Route: React.FC = () => {
+  const [version] = useHashParam("v", "1");
   const [code, setCode] = useHashParamBase64("js");
-  const [config, setConfig] = useHashParamJson<Config>("c", {modules: []});
+  const [config, setConfig] = useHashParamJson<Config>("c", { modules: [] });
   // This is the actual metaframe URL to export
   const [url, setUrl] = useState<string>();
 
@@ -43,8 +45,8 @@ export const Route: React.FC = () => {
         stringToBase64String(code)
       );
     }
+    url.hash = setHashValueInHashString(url.hash, "v", "1");
     setUrl(url.href);
-
   }, [config, code, setUrl]);
 
   const onCodeOutputsUpdate = useCallback(
@@ -59,7 +61,9 @@ export const Route: React.FC = () => {
       <SimpleGrid columns={2} spacing={10} width="100%">
         <FormModulesAndCss config={config} setConfig={setConfig} />
         <MetapageUrl url={url} />
-        <FormDefinition config={config} setConfig={setConfig} />
+        {config ? (
+          <FormDefinition config={config} setConfig={setConfig} />
+        ) : null}
       </SimpleGrid>
       <HStack rounded="md" width="100%" alignItems="flex-start"></HStack>
 

@@ -5,26 +5,27 @@ import {
   blobToBase64String,
 } from "https://esm.sh/@metapages/hash-query@0.3.12"; // 💕 u deno
 import {
+  MetaframeDefinitionV6,
   MetaframeDefinitionV5,
   MetaframeDefinitionV4,
-} from "https://esm.sh/@metapages/metapage@0.11.9";
-import mp from "https://esm.sh/@metapages/metapage@0.11.9";
+} from "https://esm.sh/@metapages/metapage@0.12.2";
+import mp from "https://esm.sh/@metapages/metapage@0.12.2";
 // @ts-ignore: packaging of types is somehow borked
 // I cannot just import this from https://esm.sh/@metapages/metapage@0.11.9
 // instead I have to do this, like WTF is it a packaging issue their end
 // or my own packaging issue
 const convertMetaframeJsonToCurrentVersion = mp.convertMetaframeJsonToCurrentVersion as (
-  m: MetaframeDefinitionV5 | MetaframeDefinitionV4
-)=> MetaframeDefinitionV5;
+  m: MetaframeDefinitionV6 | MetaframeDefinitionV5 | MetaframeDefinitionV4
+)=> MetaframeDefinitionV6;
 
 export interface Config {
   modules: string[];
-  definition?: MetaframeDefinitionV5;
+  definition?: MetaframeDefinitionV6;
 }
 
 interface UrlEncodedConfigV1 {
   modules: string[];
-  definition?: MetaframeDefinitionV5;
+  definition?: MetaframeDefinitionV6;
 }
 
 export const urlToConfig = (url: URL): Config => {
@@ -54,11 +55,95 @@ const urlTokenV1ToConfig = (encoded: string): Config => {
   return configV1;
 };
 
-const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV5 = {
-  // @ts-ignore: failure to properly import the types
-  version: "0.5",//VersionsMetaframe.V0_5,//MetaframeVersionCurrent,
+const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
+  version: mp.MetaframeVersionCurrent, //VersionsMetaframe.V0_6,
   metadata: {
     name: "Javascript code runner",
+    operations: {
+      create: {
+        type: "url",
+        url: "https://metapages.github.io/metaframe-generic-js-runtime/",
+        params: [
+          {
+            from: "js",
+            to: "js",
+          },
+          {
+            from: "v",
+            to: "v",
+            toType: "search",
+          },
+          {
+            from: "c",
+            to: "c",
+            toType: "search",
+          },
+        ],
+      },
+      edit: {
+        type: "metapage",
+
+        url: "https://metapages.github.io/metaframe-generic-js-runtime/",
+        metapage: {
+          "meta": {
+            "layouts": {
+              "react-grid-layout": {
+                "props": {
+                  "cols": 12,
+                  "margin": [
+                    10,
+                    20
+                  ],
+                  "rowHeight": 100,
+                  "containerPadding": [
+                    5,
+                    5
+                  ]
+                },
+                "layout": [
+                  {
+                    "h": 6,
+                    "i": "code",
+                    "w": 6,
+                    "x": 0,
+                    "y": 0,
+                    "moved": false,
+                    "static": false
+                  },
+                  {
+                    "h": 6,
+                    "i": "edit",
+                    "w": 6,
+                    "x": 6,
+                    "y": 0,
+                    "moved": false,
+                    "static": false,
+                    "isDraggable": true
+                  }
+                ]
+              }
+            }
+          },
+          "version": mp.MetapageVersionCurrent,
+          "metaframes": {
+            "code": {
+              "url": "https://metapages.github.io/metaframe-editor/#?options=eyJoaWRlbWVudWlmaWZyYW1lIjp0cnVlLCJtb2RlIjoiamF2YXNjcmlwdCIsInNhdmVsb2FkaW5oYXNoIjp0cnVlLCJ0aGVtZSI6ImxpZ2h0In0="
+            },
+            "edit": {
+              "url": ""
+            }
+          }
+        },
+        metaframe: "edit",
+        params: [
+          {
+            metaframe: "code",
+            from: "js",
+            to: "js",
+          },
+        ],
+      },
+    }
   },
   inputs: {},
   outputs: {},
@@ -186,36 +271,62 @@ const handler = (request: Request): Response => {
 
 
     const config: Config = urlToConfig(url);
-    const metaframeDefinition: MetaframeDefinitionV5 =
+    const metaframeDefinition: MetaframeDefinitionV6 =
       convertMetaframeJsonToCurrentVersion(
         config.definition || DEFAULT_METAFRAME_DEFINITION
       );
 
-    metaframeDefinition.metadata = metaframeDefinition.metadata
-      ? metaframeDefinition.metadata
-      : {};
-    metaframeDefinition.metadata.edit = {
-      type: "metaframe",
-      value: {
-        url: "https://metapages.github.io/metaframe-generic-js-runtime/",
-        params: [
-          {
-            from: "js",
-            to: "js",
-          },
-          {
-            from: "v",
-            to: "v",
-            toType: "search",
-          },
-          {
-            from: "c",
-            to: "c",
-            toType: "search",
-          },
-        ],
-      },
-    };
+    // metaframeDefinition.metadata = metaframeDefinition.metadata
+    //   ? metaframeDefinition.metadata
+    //   : {};
+    //   metaframeDefinition.metadata.operations = metaframeDefinition.metadata.operations
+    //   ? metaframeDefinition.metadata.operations
+    //   : {};
+    // metaframeDefinition.metadata.operations.create = {
+    //   type: "url",
+    //   value: {
+    //     url: "https://metapages.github.io/metaframe-generic-js-runtime/",
+    //     params: [
+    //       {
+    //         from: "js",
+    //         to: "js",
+    //       },
+    //       {
+    //         from: "v",
+    //         to: "v",
+    //         toType: "search",
+    //       },
+    //       {
+    //         from: "c",
+    //         to: "c",
+    //         toType: "search",
+    //       },
+    //     ],
+    //   },
+    // };
+
+    // metaframeDefinition.metadata.operations.create = {
+    //   type: "url",
+    //   value: {
+    //     url: "https://metapages.github.io/metaframe-generic-js-runtime/",
+    //     params: [
+    //       {
+    //         from: "js",
+    //         to: "js",
+    //       },
+    //       {
+    //         from: "v",
+    //         to: "v",
+    //         toType: "search",
+    //       },
+    //       {
+    //         from: "c",
+    //         to: "c",
+    //         toType: "search",
+    //       },
+    //     ],
+    //   },
+    // };
 
     const body = JSON.stringify(metaframeDefinition, null, "  ");
     CACHE.set(url.href, body);
