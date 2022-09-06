@@ -8,8 +8,8 @@ import {
   MetaframeDefinitionV6,
   MetaframeDefinitionV5,
   MetaframeDefinitionV4,
-} from "https://esm.sh/@metapages/metapage@0.12.2";
-import mp from "https://esm.sh/@metapages/metapage@0.12.2";
+} from "https://esm.sh/@metapages/metapage@0.12.3";
+import mp from "https://esm.sh/@metapages/metapage@0.12.3";
 // @ts-ignore: packaging of types is somehow borked
 // I cannot just import this from https://esm.sh/@metapages/metapage@0.11.9
 // instead I have to do this, like WTF is it a packaging issue their end
