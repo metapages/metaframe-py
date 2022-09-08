@@ -45,13 +45,15 @@ export const Route: React.FC = () => {
         stringToBase64String(code)
       );
     }
-    url.hash = setHashValueInHashString(url.hash, "v", "1");
+    // Remove the c and v hash params since they are set in the searchParams
+    url.hash = setHashValueInHashString(url.hash, "c", null);
+    url.hash = setHashValueInHashString(url.hash, "v", null);
     setUrl(url.href);
   }, [config, code, setUrl]);
 
   const onCodeOutputsUpdate = useCallback(
     (outputs: MetaframeInputMap) => {
-      setCode(outputs.value);
+      setCode(outputs.text);
     },
     [setCode]
   );
@@ -89,9 +91,9 @@ export const Route: React.FC = () => {
             {url ? (
               <MetaframeStandaloneComponent
                 url={
-                  "https://metapages.github.io/metaframe-editor/#?options=eyJtb2RlIjoiamF2YXNjcmlwdCIsInNhdmVsb2FkaW5oYXNoIjp0cnVlLCJ0aGVtZSI6InZzLWRhcmsifQ=="
+                  "https://editor.mtfm.io/#?options=eyJtb2RlIjoiamF2YXNjcmlwdCIsInNhdmVsb2FkaW5oYXNoIjp0cnVlLCJ0aGVtZSI6InZzLWRhcmsifQ=="
                 }
-                inputs={{ value: code }}
+                inputs={{ text: code }}
                 onOutputs={onCodeOutputsUpdate}
               />
             ) : null}

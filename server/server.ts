@@ -62,7 +62,7 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
     operations: {
       create: {
         type: "url",
-        url: "https://metapages.github.io/metaframe-generic-js-runtime/",
+        url: "https://js-create.mtfm.io/",
         params: [
           {
             from: "js",
@@ -82,8 +82,6 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
       },
       edit: {
         type: "metapage",
-
-        url: "https://metapages.github.io/metaframe-generic-js-runtime/",
         metapage: {
           "meta": {
             "layouts": {
@@ -127,7 +125,7 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
           "version": mp.MetapageVersionCurrent,
           "metaframes": {
             "code": {
-              "url": "https://metapages.github.io/metaframe-editor/#?options=eyJoaWRlbWVudWlmaWZyYW1lIjp0cnVlLCJtb2RlIjoiamF2YXNjcmlwdCIsInNhdmVsb2FkaW5oYXNoIjp0cnVlLCJ0aGVtZSI6ImxpZ2h0In0="
+              "url": "https://editor.mtfm.io/#?options=eyJoaWRlbWVudWlmaWZyYW1lIjp0cnVlLCJtb2RlIjoiamF2YXNjcmlwdCIsInNhdmVsb2FkaW5oYXNoIjp0cnVlLCJ0aGVtZSI6ImxpZ2h0In0="
             },
             "edit": {
               "url": ""
@@ -157,7 +155,7 @@ const HTML_TEMPLATE = [
   <head>
     <meta charset="utf-8">
     <title>Metaframe JS</title>
-    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.9.0/browser/metaframe/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.12.3/dist/browser/metaframe/index.js"></script>
 `,
   `
   <script>
