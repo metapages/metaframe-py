@@ -8,8 +8,8 @@ import {
   MetaframeDefinitionV6,
   MetaframeDefinitionV5,
   MetaframeDefinitionV4,
-} from "https://esm.sh/@metapages/metapage@0.12.3";
-import mp from "https://esm.sh/@metapages/metapage@0.12.3";
+} from "https://esm.sh/@metapages/metapage@0.13.0";
+import mp from "https://esm.sh/@metapages/metapage@0.13.0";
 // @ts-ignore: packaging of types is somehow borked
 // I cannot just import this from https://esm.sh/@metapages/metapage@0.11.9
 // instead I have to do this, like WTF is it a packaging issue their end
@@ -155,7 +155,7 @@ const HTML_TEMPLATE = [
   <head>
     <meta charset="utf-8">
     <title>Metaframe JS</title>
-    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.12.3/dist/browser/metaframe/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.0/dist/browser/metaframe/index.js"></script>
 `,
   `
   <script>
