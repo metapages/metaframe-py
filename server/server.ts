@@ -8,8 +8,12 @@ import {
   MetaframeDefinitionV6,
   MetaframeDefinitionV5,
   MetaframeDefinitionV4,
-} from "https://esm.sh/@metapages/metapage@0.13.0";
-import mp from "https://esm.sh/@metapages/metapage@0.13.0";
+} from "https://esm.sh/@metapages/metapage@0.12.3";
+// NB this is an older version because:
+// Uncaught SyntaxError: The requested module '/v95/unibabel@2.1.8/deno/unibabel.js' does not provide an export named 'Unibabel'
+// for @metapages/metapage@0.13.0 and above
+// But the metaframe library is up-t0-date and the server doesn't actually hard require that version
+import mp from "https://esm.sh/@metapages/metapage@0.12.3";
 // @ts-ignore: packaging of types is somehow borked
 // I cannot just import this from https://esm.sh/@metapages/metapage@0.11.9
 // instead I have to do this, like WTF is it a packaging issue their end
