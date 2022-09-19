@@ -159,7 +159,7 @@ const HTML_TEMPLATE = [
   <head>
     <meta charset="utf-8">
     <title>Metaframe JS</title>
-    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.0/dist/browser/metaframe/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.5/dist/browser/metaframe/index.js"></script>
 `,
   `
   <script>
