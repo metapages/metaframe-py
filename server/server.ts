@@ -238,7 +238,7 @@ const HTML_TEMPLATE = [
 
 `,
   `<script>
-    function inIframe () {
+    function isIframe () {
       try {
         return window.self !== window.top;
       } catch (e) {
