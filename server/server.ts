@@ -238,10 +238,17 @@ const HTML_TEMPLATE = [
 
 `,
   `<script>
+    function inIframe () {
+      try {
+        return window.self !== window.top;
+      } catch (e) {
+        return true;
+      }
+    }
     const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
     if (hashParams.js) {
       (async () => {
-        if (metapage.isIframe()) {
+        if (isIframe()) {
           await metaframe.connected();
         }
         const js = atob(hashParams.js);
