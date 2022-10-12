@@ -241,7 +241,9 @@ const HTML_TEMPLATE = [
     const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
     if (hashParams.js) {
       (async () => {
-        await metaframe.connected();
+        if (metapage.isIframe()) {
+          await metaframe.connected();
+        }
         const js = atob(hashParams.js);
         const result = await execJsCode(js, {});
         if (result.failure) {
