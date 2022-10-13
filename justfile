@@ -19,31 +19,18 @@ dev services="":
     @just ingress/mkcert
     docker-compose build {{services}}
     docker-compose down
-    @open https://${APP_FQDN}:${APP_PORT_BROWSER};
+    just open
     docker-compose up {{services}}
 
 @publish:
     just client/publish
 
+# Open the development browser window
 open:
-    open https://${APP_FQDN}:${APP_PORT_BROWSER:-4440}
+    deno run --allow-all --unstable https://deno.land/x/metapages@v0.0.17/exec/open_url.ts https://metapages.github.io/load-page-when-available/?url=https://${APP_FQDN}:${APP_PORT_BROWSER:-4440}
 
 # Delete all cached and generated files, and docker volumes
 clean:
     just ingress/clean
     just client/clean
     docker-compose down -v
-
-
-# start:
-#     deno run --import-map=importMap.json -A --unstable server.js
-
-# cache:
-#     deno cache --import-map=importMap.json --reload server.js
-
-# vendor:
-#     deno run --import-map=importMap.json -A --unstable https://deno.land/x/ultra/vendor.ts
-
-# DEV: generate TLS certs for HTTPS over localhost https://blog.filippo.io/mkcert-valid-https-certificates-for-localhost/
-# @_mkcert:
-#     APP_FQDN={{SERVER_FQDN}} deno run --allow-all --unstable https://deno.land/x/metapages@v0.0.13/commands/ensure_mkcert.ts

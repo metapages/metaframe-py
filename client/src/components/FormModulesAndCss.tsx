@@ -35,7 +35,7 @@ export const FormModulesAndCss: React.FC<{
   return (
     <VStack width="100%" alignItems="flex-start">
       <Heading size="sm">
-        Javascript module URLs (embedded in index.html){" "}
+        Javascript and CSS URLs (embedded in index.html){" "}
       </Heading>
       <VStack
         justifyContent="flex-start"
