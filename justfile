@@ -17,8 +17,8 @@ grey                               := "\\e[90m"
 
 dev services="":
     @just ingress/mkcert
-    docker-compose build {{services}}
     docker-compose down
+    docker-compose build {{services}}
     just open
     docker-compose up {{services}}
 

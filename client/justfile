@@ -47,7 +47,7 @@ grey                               := "\\e[90m"
     echo -e ""
 
 # Run the dev server pointing to the local docker stack. For production: just dev js.mtfm.io
-dev server="js.mtfm.io:443": _mkcert _ensure_npm_modules  (_tsc "--build")
+dev server="js.mtfm.io:443": _mkcert _ensure_npm_modules
     #!/usr/bin/env bash
     set -euo pipefail
     VITE_SERVER_ORIGIN={{SERVER_ORIGIN}}
@@ -55,17 +55,15 @@ dev server="js.mtfm.io:443": _mkcert _ensure_npm_modules  (_tsc "--build")
         VITE_SERVER_ORIGIN={{server}}
         echo "Browser development pointing to: ${VITE_SERVER_ORIGIN}"
     fi
-    MAYBE_OPEN_BROWSER=""
-    if [ ! -f /.dockerenv ]; then
-        export MAYBE_OPEN_BROWSER="--open";
-    fi
+    deno run --allow-all --unstable https://deno.land/x/metapages@v0.0.17/exec/open_url.ts https://metapages.github.io/load-page-when-available/?url=https://${APP_FQDN}:${APP_PORT_BROWSER}
     npm i
+    just _tsc "--build"
     export HOST={{APP_FQDN}}
     export PORT={{APP_PORT_BROWSER}}
     export CERT_FILE=../.certs/{{APP_FQDN}}.pem
     export CERT_KEY_FILE=../.certs/{{APP_FQDN}}-key.pem
     export BASE=
-    VITE_SERVER_ORIGIN=${VITE_SERVER_ORIGIN} {{vite}} --clearScreen false ${MAYBE_OPEN_BROWSER}
+    VITE_SERVER_ORIGIN=${VITE_SERVER_ORIGIN} {{vite}} --clearScreen false
 
 # Build the browser client
 build BASE="": _ensure_npm_modules (_tsc "--build")

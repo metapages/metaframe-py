@@ -35,14 +35,20 @@ interface UrlEncodedConfigV1 {
 export const urlToConfig = (url: URL): Config => {
   const version: string | null = url.searchParams.get("v");
   const encodedConfigString: string | null = url.searchParams.get("c");
-  if (!version || !encodedConfigString) {
+  if (!encodedConfigString) {
     return { modules: [] };
   }
   switch (version) {
     case "1":
       return urlTokenV1ToConfig(encodedConfigString);
     default:
-      return { modules: [] };
+      try {
+        return urlTokenV1ToConfig(encodedConfigString);
+      } catch (e) {
+        console.error(e);
+        return { modules: [] };
+      }
+
   }
 };
 
@@ -64,7 +70,7 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
   metadata: {
     name: "Javascript code runner",
     operations: {
-      create: {
+      edit: {
         type: "url",
         url: "https://js-create.mtfm.io/",
         params: [
@@ -84,67 +90,7 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
           },
         ],
       },
-      edit: {
-        type: "metapage",
-        metapage: {
-          "meta": {
-            "layouts": {
-              "react-grid-layout": {
-                "props": {
-                  "cols": 12,
-                  "margin": [
-                    10,
-                    20
-                  ],
-                  "rowHeight": 100,
-                  "containerPadding": [
-                    5,
-                    5
-                  ]
-                },
-                "layout": [
-                  {
-                    "h": 6,
-                    "i": "code",
-                    "w": 6,
-                    "x": 0,
-                    "y": 0,
-                    "moved": false,
-                    "static": false
-                  },
-                  {
-                    "h": 6,
-                    "i": "edit",
-                    "w": 6,
-                    "x": 6,
-                    "y": 0,
-                    "moved": false,
-                    "static": false,
-                    "isDraggable": true
-                  }
-                ]
-              }
-            }
-          },
-          "version": mp.MetapageVersionCurrent,
-          "metaframes": {
-            "code": {
-              "url": "https://editor.mtfm.io/#?options=eyJoaWRlbWVudWlmaWZyYW1lIjp0cnVlLCJtb2RlIjoiamF2YXNjcmlwdCIsInNhdmVsb2FkaW5oYXNoIjp0cnVlLCJ0aGVtZSI6ImxpZ2h0In0="
-            },
-            "edit": {
-              "url": ""
-            }
-          }
-        },
-        metaframe: "edit",
-        params: [
-          {
-            metaframe: "code",
-            from: "text",
-            to: "js",
-          },
-        ],
-      },
+
     }
   },
   inputs: {},
@@ -237,28 +183,28 @@ const HTML_TEMPLATE = [
     <div id="root"></div>
 
 `,
-  `<script>
-    function isIframe () {
-      try {
-        return window.self !== window.top;
-      } catch (e) {
-        return true;
+  `    <script>
+      function isIframe () {
+        try {
+          return window.self !== window.top;
+        } catch (e) {
+          return true;
+        }
       }
-    }
-    const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
-    if (hashParams.js) {
-      (async () => {
-        if (isIframe()) {
-          await metaframe.connected();
-        }
-        const js = atob(hashParams.js);
-        const result = await execJsCode(js, {});
-        if (result.failure) {
-          document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
-        }
-      })();
-    }
-  </script>`,
+      const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
+      if (hashParams.js) {
+        (async () => {
+          if (isIframe()) {
+            await metaframe.connected();
+          }
+          const js = atob(hashParams.js);
+          const result = await execJsCode(js, {});
+          if (result.failure) {
+            document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
+          }
+        })();
+      }
+    </script>`,
   `
 </body>
 
@@ -365,8 +311,8 @@ const handler = (request: Request): Response => {
       config.modules
         .map((m) =>
           m.endsWith(".css")
-            ? `<link rel="stylesheet" type="text/css" href="${m}" crossorigin="anonymous">`
-            : `<script src="${m}" crossorigin="anonymous"></script>`
+            ? `    <link rel="stylesheet" type="text/css" href="${m}" crossorigin="anonymous">`
+            : `    <script src="${m}" crossorigin="anonymous"></script>`
         )
         .join("\n");
   } catch (err) {
