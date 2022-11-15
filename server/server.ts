@@ -18,9 +18,10 @@ import mp from "https://esm.sh/@metapages/metapage@0.12.3";
 // I cannot just import this from https://esm.sh/@metapages/metapage@0.11.9
 // instead I have to do this, like WTF is it a packaging issue their end
 // or my own packaging issue
-const convertMetaframeJsonToCurrentVersion = mp.convertMetaframeJsonToCurrentVersion as (
-  m: MetaframeDefinitionV6 | MetaframeDefinitionV5 | MetaframeDefinitionV4
-)=> MetaframeDefinitionV6;
+const convertMetaframeJsonToCurrentVersion =
+  mp.convertMetaframeJsonToCurrentVersion as (
+    m: MetaframeDefinitionV6 | MetaframeDefinitionV5 | MetaframeDefinitionV4
+  ) => MetaframeDefinitionV6;
 
 export interface Config {
   modules: string[];
@@ -48,7 +49,6 @@ export const urlToConfig = (url: URL): Config => {
         console.error(e);
         return { modules: [] };
       }
-
   }
 };
 
@@ -90,8 +90,7 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
           },
         ],
       },
-
-    }
+    },
   },
   inputs: {},
   outputs: {},
@@ -228,7 +227,6 @@ const handler = (request: Request): Response => {
       return response;
     }
 
-
     const config: Config = urlToConfig(url);
     const metaframeDefinition: MetaframeDefinitionV6 =
       convertMetaframeJsonToCurrentVersion(
@@ -310,11 +308,21 @@ const handler = (request: Request): Response => {
     template[0] =
       template[0] +
       config.modules
+        .filter((m) => !(m.startsWith("<") && m.includes("onload")))
         .map((m) =>
-          m.startsWith("<") ? m : m.endsWith(".css")
+          m.startsWith("<")
+            ? m
+            : m.endsWith(".css")
             ? `    <link rel="stylesheet" type="text/css" href="${m}" crossorigin="anonymous">`
             : `    <script src="${m}" crossorigin="anonymous"></script>`
         )
+        .join("\n");
+
+    template[2] =
+      template[2] +
+      config.modules
+        .filter((m) => m.startsWith("<") && m.includes("onload"))
+        .map((m) => m)
         .join("\n");
   } catch (err) {
     // err
