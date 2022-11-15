@@ -106,6 +106,7 @@ const HTML_TEMPLATE = [
     <meta charset="utf-8">
     <title>Metaframe JS</title>
     <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.5/dist/browser/metaframe/index.js"></script>
+    <script>var exports = {};</script>
 `,
   `
   <script>
@@ -310,7 +311,7 @@ const handler = (request: Request): Response => {
       template[0] +
       config.modules
         .map((m) =>
-          m.endsWith(".css")
+          m.startsWith("<") ? m : m.endsWith(".css")
             ? `    <link rel="stylesheet" type="text/css" href="${m}" crossorigin="anonymous">`
             : `    <script src="${m}" crossorigin="anonymous"></script>`
         )
