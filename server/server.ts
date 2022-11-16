@@ -105,7 +105,6 @@ const HTML_TEMPLATE = [
     <meta charset="utf-8">
     <title>Metaframe JS</title>
     <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.5/dist/browser/metaframe/index.js"></script>
-    <script>var exports = {};</script>
 `,
   `
   <script>
@@ -176,7 +175,15 @@ const HTML_TEMPLATE = [
       (key) => (hashObject[key] = decodeURI(hashObject[key]))
     );
     return [preHashString, hashObject];
-  };
+  }
+
+  const isIframe = () => {
+    try {
+      return window.self !== window.top;
+    } catch (e) {
+      return true;
+    }
+  }
   </script>
   </head>
   <body>
@@ -184,26 +191,17 @@ const HTML_TEMPLATE = [
 
 `,
   `    <script>
-      function isIframe () {
-        try {
-          return window.self !== window.top;
-        } catch (e) {
-          return true;
-        }
-      }
       document.addEventListener("DOMContentLoaded", async (event) => {
         const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
         if (hashParams.js) {
-          (async () => {
-            if (isIframe()) {
-              await metaframe.connected();
-            }
-            const js = atob(hashParams.js);
-            const result = await execJsCode(js, {});
-            if (result.failure) {
-              document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
-            }
-          })();
+          if (isIframe()) {
+            await metaframe.connected();
+          }
+          const js = atob(hashParams.js);
+          const result = await execJsCode(js, {});
+          if (result.failure) {
+            document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
+          }
         }
       });
     </script>`,
