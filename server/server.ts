@@ -191,19 +191,21 @@ const HTML_TEMPLATE = [
           return true;
         }
       }
-      const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
-      if (hashParams.js) {
-        (async () => {
-          if (isIframe()) {
-            await metaframe.connected();
-          }
-          const js = atob(hashParams.js);
-          const result = await execJsCode(js, {});
-          if (result.failure) {
-            document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
-          }
-        })();
-      }
+      document.addEventListener("DOMContentLoaded", async (event) => {
+        const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
+        if (hashParams.js) {
+          (async () => {
+            if (isIframe()) {
+              await metaframe.connected();
+            }
+            const js = atob(hashParams.js);
+            const result = await execJsCode(js, {});
+            if (result.failure) {
+              document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
+            }
+          })();
+        }
+      });
     </script>`,
   `
 </body>
