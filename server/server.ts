@@ -242,7 +242,7 @@ const handler = (request: Request): Response => {
     // metaframeDefinition.metadata.operations.create = {
     //   type: "url",
     //   value: {
-    //     url: "https://metapages.github.io/metaframe-generic-js-runtime/",
+    //     url: "https://metapages.github.io/metaframe-js/",
     //     params: [
     //       {
     //         from: "js",
@@ -265,7 +265,7 @@ const handler = (request: Request): Response => {
     // metaframeDefinition.metadata.operations.create = {
     //   type: "url",
     //   value: {
-    //     url: "https://metapages.github.io/metaframe-generic-js-runtime/",
+    //     url: "https://metapages.github.io/metaframe-js/",
     //     params: [
     //       {
     //         from: "js",
