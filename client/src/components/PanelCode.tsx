@@ -1,20 +1,13 @@
+import { useCallback, useRef, useState } from "react";
 import { Box, Heading, HStack, VStack } from "@chakra-ui/react";
 import { useHashParamBase64 } from "@metapages/hash-query";
 import { MetaframeInputMap } from "@metapages/metapage";
 import { MetaframeStandaloneComponent } from "@metapages/metapage-embed-react";
-import { useCallback } from "react";
 import { useMetaframeUrl } from "/@/hooks/useMetaframeUrl";
 
 export const PanelCode: React.FC = () => {
   const [code, setCode] = useHashParamBase64("js");
   const { url } = useMetaframeUrl();
-
-  const onCodeOutputsUpdate = useCallback(
-    (outputs: MetaframeInputMap) => {
-      setCode(outputs.text);
-    },
-    [setCode]
-  );
 
   return (
     <HStack width="100%" spacing={10}>
@@ -29,15 +22,7 @@ export const PanelCode: React.FC = () => {
           rounded="md"
           overflow="scroll"
         >
-          {url ? (
-            <MetaframeStandaloneComponent
-              url={
-                "https://editor.mtfm.io/#?options=eyJoaWRlbWVudWlmaWZyYW1lIjp0cnVlLCJtb2RlIjoiamF2YXNjcmlwdCIsInNhdmVsb2FkaW5oYXNoIjp0cnVlLCJ0aGVtZSI6InZzLWRhcmsifQ=="
-              }
-              inputs={{ text: code }}
-              onOutputs={onCodeOutputsUpdate}
-            />
-          ) : null}
+          {url ? <LocalEditor code={code} setCode={setCode} /> : null}
         </Box>
       </VStack>
 
@@ -49,5 +34,30 @@ export const PanelCode: React.FC = () => {
         </Box>
       </VStack>
     </HStack>
+  );
+};
+
+const LocalEditor: React.FC<{
+  code: string;
+  setCode: (code: string) => void;
+}> = ({ code, setCode }) => {
+  // only use the code prop initially, but then ignore so we don't get clobbering
+  const codeInternal = useRef<string>(code);
+  const inputs = useRef<{ text: string }>({ text: codeInternal.current });
+  const onCodeOutputsUpdate = useCallback(
+    (outputs: MetaframeInputMap) => {
+      setCode(outputs.text);
+    },
+    [setCode]
+  );
+
+  return (
+    <MetaframeStandaloneComponent
+      url={
+        "https://editor.mtfm.io/#?options=eyJhdXRvc2VuZCI6dHJ1ZSwiaGlkZW1lbnVpZmlmcmFtZSI6dHJ1ZSwibW9kZSI6ImphdmFzY3JpcHQiLCJzYXZlbG9hZGluaGFzaCI6dHJ1ZSwidGhlbWUiOiJ2cy1kYXJrIn0="
+      }
+      inputs={inputs.current}
+      onOutputs={onCodeOutputsUpdate}
+    />
   );
 };
