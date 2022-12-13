@@ -208,7 +208,6 @@ const HTML_TEMPLATE = [
   </head>
   <body>
     <div id="root"></div>
-
 `,
   `    <script>
       document.addEventListener("DOMContentLoaded", async (event) => {
@@ -335,15 +334,11 @@ const handler = (request: Request): Response => {
             : m.endsWith(".css")
             ? `    <link rel="stylesheet" type="text/css" href="${m}" crossorigin="anonymous">`
             : `    <script src="${m}" crossorigin="anonymous"></script>`
-        );
+        )
+        .join("\n");
 
     template[2] =
-      template[2] +
-      (config?.opt?.c ? OPTIONAL_DISPLAY_CONSOLE : "") +
-      config.modules
-        .filter((m) => m.startsWith("<") && m.includes("onload"))
-        .map((m) => m)
-        .join("\n");
+      template[2] + (config?.opt?.c ? OPTIONAL_DISPLAY_CONSOLE : "");
   } catch (err) {
     // err
     template[2] = `<div>Error parsing URL config:\n\n${err}\n</div>`;
