@@ -1,15 +1,25 @@
 // Shared between client and server
 
-import { MetaframeDefinitionV5 } from "@metapages/metapage";
+import { MetaframeDefinitionV6 } from "@metapages/metapage";
+
+export interface ConfigOptions {
+  // console
+  c?: boolean;
+}
 
 export interface Config {
   modules: string[];
-  definition?: MetaframeDefinitionV5;
+  definition?: MetaframeDefinitionV6;
+  opt?: ConfigOptions;
 }
+
+export const ConfigDefault: Config = {
+  modules: [],
+};
 
 interface UrlEncodedConfigV1 {
   modules: string[];
-  definition?: MetaframeDefinitionV5;
+  definition?: MetaframeDefinitionV6;
 }
 
 export const urlToConfig = (url: URL): Config => {

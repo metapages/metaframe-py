@@ -5,12 +5,12 @@ import {
   useHashParamJson,
 } from "@metapages/hash-query";
 import { useEffect, useState } from "react";
-import { Config, configToUrl } from "../shared/config";
+import { Config, ConfigDefault, configToUrl } from "../shared/config";
 
 export const useMetaframeUrl = () => {
   const [url, setUrl] = useState<string>();
   const [code] = useHashParamBase64("js");
-  const [config] = useHashParamJson<Config>("c", { modules: [] });
+  const [config] = useHashParamJson<Config>("c", ConfigDefault);
   // update the url
   useEffect(() => {
     const url = new URL(window.location.href);

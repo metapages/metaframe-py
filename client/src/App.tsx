@@ -15,6 +15,7 @@ import { ButtonGotoExternalLink } from "/@/components/ButtonGotoExternalLink";
 import { ButtonCopyExternalLink } from "/@/components/ButtoCopyExternalLink";
 import { ButtonGithub } from "/@/components/ButtonGithub";
 import "/@/app.css";
+import { PanelOptions } from "/@/components/PanelOptions";
 
 export const App: React.FC = () => {
   return (
@@ -25,6 +26,9 @@ export const App: React.FC = () => {
         </Tab>
         <Tab>
           <PlusSquareIcon /> &nbsp; Modules
+        </Tab>
+        <Tab>
+           Options
         </Tab>
         <Tab>
           <InfoIcon /> &nbsp; Help
@@ -42,6 +46,9 @@ export const App: React.FC = () => {
         </TabPanel>
         <TabPanel>
           <PanelModules />
+        </TabPanel>
+        <TabPanel>
+          <PanelOptions />
         </TabPanel>
         <TabPanel>
           <PanelHelp />

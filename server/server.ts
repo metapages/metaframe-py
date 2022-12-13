@@ -6,26 +6,19 @@ import {
 } from "https://esm.sh/@metapages/hash-query@0.3.12"; // 💕 u deno
 import {
   MetaframeDefinitionV6,
-  MetaframeDefinitionV5,
-  MetaframeDefinitionV4,
-} from "https://esm.sh/@metapages/metapage@0.12.3";
-// NB this is an older version because:
-// Uncaught SyntaxError: The requested module '/v95/unibabel@2.1.8/deno/unibabel.js' does not provide an export named 'Unibabel'
-// for @metapages/metapage@0.13.0 and above
-// But the metaframe library is up-t0-date and the server doesn't actually hard require that version
-import mp from "https://esm.sh/@metapages/metapage@0.12.3";
-// @ts-ignore: packaging of types is somehow borked
-// I cannot just import this from https://esm.sh/@metapages/metapage@0.11.9
-// instead I have to do this, like WTF is it a packaging issue their end
-// or my own packaging issue
-const convertMetaframeJsonToCurrentVersion =
-  mp.convertMetaframeJsonToCurrentVersion as (
-    m: MetaframeDefinitionV6 | MetaframeDefinitionV5 | MetaframeDefinitionV4
-  ) => MetaframeDefinitionV6;
+  MetaframeVersionCurrent,
+} from "https://esm.sh/@metapages/metapage@0.13.9";
+import { convertMetaframeJsonToCurrentVersion } from "https://esm.sh/@metapages/metapage@0.13.9";
+
+export interface ConfigOptions {
+  // console
+  c?: boolean;
+}
 
 export interface Config {
   modules: string[];
   definition?: MetaframeDefinitionV6;
+  opt?: ConfigOptions;
 }
 
 interface UrlEncodedConfigV1 {
@@ -66,7 +59,7 @@ const urlTokenV1ToConfig = (encoded: string): Config => {
 };
 
 const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
-  version: mp.MetaframeVersionCurrent, //VersionsMetaframe.V0_6,
+  version: MetaframeVersionCurrent, //VersionsMetaframe.V0_6,
   metadata: {
     name: "Javascript code runner",
     operations: {
@@ -98,13 +91,40 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
 
 const CACHE = new LRU<string>(500); // define your max amount of entries, in this example is 500
 
+const OPTIONAL_DISPLAY_CONSOLE = `
+<script>
+var log = document.getElementById("root");
+log.setAttribute("style", "display:flex;flex-direction:column;font-family: monospace;");
+['log','debug','info','warn','error'].forEach(function (verb) {
+    console[verb] = (function (method, verb, log) {
+        return function () {
+            method.apply(console, arguments);
+            if (typeof(arguments[0]) === "string") {
+                arguments[0].split("\\n").forEach(l => {
+                    var msg = document.createElement('div');
+                    msg.classList.add(verb);
+                    msg.innerHTML = l.replaceAll(" ", "&#160;");
+                    log.appendChild(msg);
+                })
+            } else {
+                var msg = document.createElement('div');
+                msg.classList.add(verb);
+                msg.innerHTML = Array.prototype.slice.call(arguments).join(' ').replaceAll(" ", "&#160;");
+                log.appendChild(msg);
+            }
+        };
+    })(console[verb], verb, log);
+});
+</script>
+`;
+
 const HTML_TEMPLATE = [
   `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <title>Metaframe JS</title>
-    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.5/dist/browser/metaframe/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.9/dist/browser/metaframe/index.js"></script>
 `,
   `
   <script>
@@ -315,11 +335,11 @@ const handler = (request: Request): Response => {
             : m.endsWith(".css")
             ? `    <link rel="stylesheet" type="text/css" href="${m}" crossorigin="anonymous">`
             : `    <script src="${m}" crossorigin="anonymous"></script>`
-        )
-        .join("\n");
+        );
 
     template[2] =
       template[2] +
+      (config?.opt?.c ? OPTIONAL_DISPLAY_CONSOLE : "") +
       config.modules
         .filter((m) => m.startsWith("<") && m.includes("onload"))
         .map((m) => m)
