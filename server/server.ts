@@ -212,11 +212,17 @@ const HTML_TEMPLATE = [
   `    <script>
       document.addEventListener("DOMContentLoaded", async (event) => {
         const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
-        if (hashParams.js) {
+        let jsFromUrl = hashParams.js;
+        // expecting js code via hash params, but that fails to embed in some places e.g. notion
+        // so also allow js from query params if none in hash params
+        if (!jsFromUrl) {
+          jsFromUrl = new URL(window.location.href).searchParams.get("js");
+        }
+        if (jsFromUrl) {
           if (isIframe()) {
             await metaframe.connected();
           }
-          const js = atob(hashParams.js);
+          const js = atob(jsFromUrl);
           const result = await execJsCode(js, {});
           if (result.failure) {
             document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
