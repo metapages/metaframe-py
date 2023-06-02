@@ -1,0 +1,36 @@
+import { useCallback } from 'react';
+
+import {
+  Config,
+  ConfigDefault,
+  ConfigOptions,
+} from '/@/shared/config';
+
+import {
+  FormLabel,
+  InputGroup,
+  Switch,
+} from '@chakra-ui/react';
+import { useHashParamJson } from '@metapages/hash-query';
+
+export const SwitchDoNotWaitForMetapageConnection: React.FC = () => {
+  const [config, setConfig] = useHashParamJson<Config>("c", ConfigDefault);
+
+  const onChange = useCallback(() => {
+    const newValue = !(config?.opt?.s ?? undefined);
+    const options :ConfigOptions = { ...config.opt, s: newValue };
+    if (!options.s) {
+      delete options.s;
+    }
+    setConfig({ ...config, opt: options });
+  }, [config, setConfig]);
+
+  return (
+    <InputGroup size="md">
+      <FormLabel htmlFor="standalone" mb="0">
+        Run immediately (do not wait for metapage connection)
+      </FormLabel>
+      <Switch id="standalone" isChecked={config?.opt?.s} onChange={onChange} />
+    </InputGroup>
+  );
+};

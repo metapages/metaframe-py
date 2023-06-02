@@ -1,14 +1,14 @@
-import { serve } from "https://deno.land/std@0.151.0/http/server.ts";
-import { LRU } from "https://deno.land/x/lru@1.0.2/mod.ts";
+import { serve } from 'https://deno.land/std@0.151.0/http/server.ts';
+import { LRU } from 'https://deno.land/x/lru@1.0.2/mod.ts';
 import {
   blobFromBase64String,
   blobToBase64String,
-} from "https://esm.sh/@metapages/hash-query@0.3.12"; // 💕 u deno
+} from 'https://esm.sh/@metapages/hash-query@0.3.12'; // 💕 u deno
 import {
+  convertMetaframeJsonToCurrentVersion,
   MetaframeDefinitionV6,
   MetaframeVersionCurrent,
-} from "https://esm.sh/@metapages/metapage@0.13.9";
-import { convertMetaframeJsonToCurrentVersion } from "https://esm.sh/@metapages/metapage@0.13.9";
+} from 'https://esm.sh/@metapages/metapage@0.13.9';
 
 export interface ConfigOptions {
   // console
@@ -213,20 +213,37 @@ const HTML_TEMPLATE = [
       document.addEventListener("DOMContentLoaded", async (event) => {
         const [prefix, hashParams] = getUrlHashParamsFromHashString(window.location.hash);
         let jsFromUrl = hashParams.js;
+
         // expecting js code via hash params, but that fails to embed in some places e.g. notion
         // so also allow js from query params if none in hash params
         if (!jsFromUrl) {
           jsFromUrl = new URL(window.location.href).searchParams.get("js");
         }
+
         if (jsFromUrl) {
-          if (isIframe()) {
-            await metaframe.connected();
+
+          let config = new URL(window.location.href).searchParams.get("c");
+
+          let standalone = false;
+          if (config) {
+            const configOptions = JSON.parse(atob(config)).opt;
+            standalone = configOptions ? !!(configOptions.s) : false;
           }
+
+          if (isIframe()) {
+            if (!standalone) {
+              await metaframe.connected();
+            }
+          }
+
           const js = atob(jsFromUrl);
           const result = await execJsCode(js, {});
+
           if (result.failure) {
             document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
           }
+        } else {
+          console.log("no js from url")
         }
       });
     </script>`,
@@ -239,6 +256,7 @@ const HTML_TEMPLATE = [
 
 const handler = (request: Request): Response => {
   const url = new URL(request.url);
+
   if (url.pathname === "/healthz") {
     return new Response("OK", { status: 200 });
   }
@@ -258,57 +276,10 @@ const handler = (request: Request): Response => {
         config.definition || DEFAULT_METAFRAME_DEFINITION
       );
 
-    // metaframeDefinition.metadata = metaframeDefinition.metadata
-    //   ? metaframeDefinition.metadata
-    //   : {};
-    //   metaframeDefinition.metadata.operations = metaframeDefinition.metadata.operations
-    //   ? metaframeDefinition.metadata.operations
-    //   : {};
-    // metaframeDefinition.metadata.operations.create = {
-    //   type: "url",
-    //   value: {
-    //     url: "https://metapages.github.io/metaframe-js/",
-    //     params: [
-    //       {
-    //         from: "js",
-    //         to: "js",
-    //       },
-    //       {
-    //         from: "v",
-    //         to: "v",
-    //         toType: "search",
-    //       },
-    //       {
-    //         from: "c",
-    //         to: "c",
-    //         toType: "search",
-    //       },
-    //     ],
-    //   },
-    // };
-
-    // metaframeDefinition.metadata.operations.create = {
-    //   type: "url",
-    //   value: {
-    //     url: "https://metapages.github.io/metaframe-js/",
-    //     params: [
-    //       {
-    //         from: "js",
-    //         to: "js",
-    //       },
-    //       {
-    //         from: "v",
-    //         to: "v",
-    //         toType: "search",
-    //       },
-    //       {
-    //         from: "c",
-    //         to: "c",
-    //         toType: "search",
-    //       },
-    //     ],
-    //   },
-    // };
+    metaframeDefinition.metadata = metaframeDefinition?.metadata || {};
+    metaframeDefinition.metadata.operations =
+      metaframeDefinition.metadata?.operations ||
+      DEFAULT_METAFRAME_DEFINITION.metadata.operations;
 
     const body = JSON.stringify(metaframeDefinition, null, "  ");
     CACHE.set(url.href, body);
@@ -359,5 +330,5 @@ const handler = (request: Request): Response => {
   return response;
 };
 
-console.log(`HTTP webserver running: http://localhost:8000/`);
+console.log(`🚀 HTTP webserver running: http://localhost:8000/`);
 await serve(handler, { port: 8000 });

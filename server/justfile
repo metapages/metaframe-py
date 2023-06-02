@@ -5,5 +5,4 @@ set dotenv-load := true
     just --list --unsorted
 
 dev:
-    watchexec --restart -w ../client/src/shared -w server.ts -w justfile -- \
-        deno run --allow-net server.ts
+    deno run --watch --allow-net server.ts

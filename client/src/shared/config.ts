@@ -5,6 +5,8 @@ import { MetaframeDefinitionV6 } from "@metapages/metapage";
 export interface ConfigOptions {
   // console
   c?: boolean;
+  // standalone (if true, do not wait for a metapage connection to load)
+  s?: boolean;
 }
 
 export interface Config {

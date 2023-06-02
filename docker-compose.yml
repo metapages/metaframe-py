@@ -37,7 +37,7 @@ services:
       timeout: 1s
     environment:
       - "DENO_DIR=/root/.cache/deno"
-    command: just dev
+    command: deno run --watch --allow-net server.ts
     volumes:
       - deno:/root/.cache/deno
       - ./server/justfile:/app/server/justfile

@@ -1,6 +1,7 @@
-import { Heading, VStack } from "@chakra-ui/react";
+import { Heading, VStack } from '@chakra-ui/react';
 
-import { SwitchDisplayConsole } from "/@/components/SwitchDisplayConsole";
+import { SwitchDoNotWaitForMetapageConnection } from './SwitchDoNotWaitForMetapageConnection';
+import { SwitchDisplayConsole } from '/@/components/SwitchDisplayConsole';
 
 export const FormOptions: React.FC = () => {
   return (
@@ -15,6 +16,7 @@ export const FormOptions: React.FC = () => {
         align="stretch"
       >
         <SwitchDisplayConsole />
+        <SwitchDoNotWaitForMetapageConnection />
       </VStack>
     </VStack>
   );
