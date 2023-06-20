@@ -253,7 +253,7 @@ const HTML_TEMPLATE = [
             document.getElementById("root").innerHTML = \`<div>Error running code:\n\n\${result.failure.error}\n</div>\`;
           }
         } else {
-          console.log("no js from url")
+          //console.log("no js from url")
         }
       });
     </script>`,
