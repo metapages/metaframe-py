@@ -124,6 +124,16 @@ const HTML_TEMPLATE = [
   <head>
     <meta charset="utf-8">
     <title>Metaframe JS</title>
+    <style>
+      html, body {
+        width:  100%;
+        height: 100%;
+        margin: 0px;
+        border: 0;
+        /* No floating content on sides */
+        display: block;
+      }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.9/dist/browser/metaframe/index.js"></script>
 `,
   `
