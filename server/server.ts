@@ -19,7 +19,7 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
     operations: {
       edit: {
         type: "url",
-        url: "https://js-create.mtfm.io/#?edit=1",
+        url: "https://js.mtfm.io/#?edit=1",
         params: [
           {
             from: "js",
