@@ -13,12 +13,6 @@ export APP_PORT                    := env_var_or_default("APP_PORT", "4430")
 export APP_PORT_BROWSER            := env_var_or_default("APP_PORT_BROWSER", "4440")
 # SERVER_ORIGIN allows overriding the target server origin for the browser
 export SERVER_ORIGIN               := env_var_or_default("SERVER_ORIGIN", "js.mtfm.io:443")
-# ROOT                               := env_var_or_default("GITHUB_WORKSPACE", `git rev-parse --show-toplevel`)
-export CI                          := env_var_or_default("CI", "")
-PACKAGE_NAME_SHORT                 := file_name(`cat package.json | jq -r '.name' | sd '.*/' ''`)
-# Store the CI/dev docker image in github
-# ghcr.io packages cannot have more than one "/" after the organization name
-export DOCKER_IMAGE_PREFIX         := "ghcr.io/metapages/" + PACKAGE_NAME_SHORT
 # Always assume our current cloud ops image is versioned to the exact same app images we deploy
 export DOCKER_TAG                  := `if [ "${GITHUB_ACTIONS}" = "true" ]; then echo "${GITHUB_SHA}"; else echo "$(git rev-parse --short=8 HEAD)"; fi`
 # The NPM_TOKEN is required for publishing to https://www.npmjs.com
@@ -42,7 +36,7 @@ grey                               := "\\e[90m"
     just --list --unsorted --list-heading $'🌱 Commands:\n\n'
     echo -e ""
     echo -e "    Github  URL 🔗 {{green}}$(cat package.json | jq -r '.repository.url'){{normal}}"
-    echo -e "    Publish URL 🔗 {{green}}https://$(cat package.json | jq -r '.name' | sd '/.*' '' | sd '@' '').github.io/{{PACKAGE_NAME_SHORT}}/{{normal}}"
+    echo -e "    Publish URL 🔗 {{green}}https://js.mtfm.io/{{normal}}"
     echo -e "    Develop URL 🔗 {{green}}https://{{APP_FQDN}}:{{APP_PORT}}/{{normal}}"
     echo -e ""
 
