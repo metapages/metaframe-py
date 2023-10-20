@@ -5,8 +5,44 @@ import {
   Router,
 } from 'https://deno.land/x/oak@v10.2.0/mod.ts';
 import staticFiles from 'https://deno.land/x/static_files@1.1.6/mod.ts';
+import {
+  MetaframeDefinitionV6,
+  MetaframeVersionCurrent,
+} from 'https://esm.sh/@metapages/metapage@0.13.9';
 
 const port: number = parseInt(Deno.env.get("PORT") || "3000");
+
+const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
+  version: MetaframeVersionCurrent,
+  metadata: {
+    name: "Javascript code runner",
+    operations: {
+      edit: {
+        type: "url",
+        url: "https://js-create.mtfm.io/#?edit=1",
+        params: [
+          {
+            from: "js",
+            to: "js",
+          },
+          {
+            from: "modules",
+            to: "modules",
+          },
+          {
+            from: "c",
+            to: "c",
+          },
+        ],
+      },
+    },
+  },
+  inputs: {},
+  outputs: {},
+};
+
+const DEFAULT_METAFRAME_DEFINITION_STRING = JSON.stringify(DEFAULT_METAFRAME_DEFINITION, null, 2);
+
 
 // const certFile = "../.certs/server1.localhost.pem",
 //   keyFile = "../.certs/server1.localhost-key.pem";
@@ -20,6 +56,10 @@ const serveIndex = async (ctx: Context) => {
 
 router.get("/", serveIndex);
 router.get("/index.html", serveIndex);
+router.get("/metaframe.json", (ctx: Context) => {
+  ctx.response.headers.set("Content-Type", "application/json");
+  ctx.response.body = DEFAULT_METAFRAME_DEFINITION_STRING;
+});
 // After creating the router, we can add it to the app.
 
 const app = new Application();

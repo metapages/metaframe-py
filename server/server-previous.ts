@@ -63,27 +63,25 @@ const urlTokenV1ToConfig = (encoded: string): Config => {
 };
 
 const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
-  version: MetaframeVersionCurrent, //VersionsMetaframe.V0_6,
+  version: MetaframeVersionCurrent,
   metadata: {
     name: "Javascript code runner",
     operations: {
       edit: {
         type: "url",
-        url: "https://js-create.mtfm.io/",
+        url: "https://js-create.mtfm.io/#?edit=1",
         params: [
           {
             from: "js",
             to: "js",
           },
           {
-            from: "v",
-            to: "v",
-            toType: "search",
+            from: "modules",
+            to: "modules",
           },
           {
             from: "c",
             to: "c",
-            toType: "search",
           },
         ],
       },
