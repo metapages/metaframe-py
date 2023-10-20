@@ -349,7 +349,7 @@
         const [prefix, hashParams] = getUrlHashParamsFromHashString(
           window.location.hash
         );
-        let jsFromUrl = hashParams.js;
+        let jsFromUrl = hashParams?.js;
 
         // expecting js code via hash params, but that fails to embed in some places e.g. notion
         // so also allow js from query params if none in hash params
@@ -627,15 +627,16 @@
 
       // If there is no code, show the editor
       if (!getJsFromUrl()) {
-        // document.addEventListener("DOMContentLoaded", () => {
-        //   onMenuClick();
-        // });
         window.addEventListener("load", () => {
           onMenuClick();
         });
       } else {
         // only show the edit button if we are NOT in an iframe
+        // or explicitly edit=true is in the hash params
         // this will be turned into a configurable option later, but no time rn
+        const [_, hashParams] = getUrlHashParamsFromHashString(
+          window.location.hash
+        );
         if (isIframe() && !(hashParams["edit"] === "true" || hashParams["edit"] === "1")) {
           document.getElementById("menu-button").style.display = "none";
         }
