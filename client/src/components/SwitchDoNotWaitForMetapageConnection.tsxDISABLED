@@ -27,10 +27,10 @@ export const SwitchDoNotWaitForMetapageConnection: React.FC = () => {
 
   return (
     <InputGroup size="md">
+      <Switch id="standalone" isChecked={config?.opt?.s} onChange={onChange} mr={5} />
       <FormLabel htmlFor="standalone" mb="0">
         Run immediately (do not wait for metapage connection)
       </FormLabel>
-      <Switch id="standalone" isChecked={config?.opt?.s} onChange={onChange} />
     </InputGroup>
   );
 };

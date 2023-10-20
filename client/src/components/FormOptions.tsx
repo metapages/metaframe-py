@@ -1,12 +1,10 @@
-import { Heading, VStack } from '@chakra-ui/react';
-
-import { SwitchDoNotWaitForMetapageConnection } from './SwitchDoNotWaitForMetapageConnection';
 import { SwitchDisplayConsole } from '/@/components/SwitchDisplayConsole';
+
+import { VStack } from '@chakra-ui/react';
 
 export const FormOptions: React.FC = () => {
   return (
     <VStack width="100%" alignItems="flex-start">
-      <Heading size="sm">Options </Heading>
       <VStack
         justifyContent="flex-start"
         borderWidth="1px"
@@ -16,7 +14,7 @@ export const FormOptions: React.FC = () => {
         align="stretch"
       >
         <SwitchDisplayConsole />
-        <SwitchDoNotWaitForMetapageConnection />
+        {/* <SwitchDoNotWaitForMetapageConnection /> */}
       </VStack>
     </VStack>
   );

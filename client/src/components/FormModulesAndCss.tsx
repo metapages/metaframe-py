@@ -1,18 +1,28 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
+
 import {
-  IconButton,
-  VStack,
+  ErrorMessage,
+  FieldArray,
+  Form,
+  Formik,
+} from 'formik';
+import * as yup from 'yup';
+
+import {
+  AddIcon,
+  DeleteIcon,
+} from '@chakra-ui/icons';
+import {
+  Button,
+  Heading,
   HStack,
+  IconButton,
   Input,
   InputGroup,
   Spacer,
-  Button,
-  Heading,
-} from "@chakra-ui/react";
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
-import { FieldArray, Form, ErrorMessage, Formik } from "formik";
-import * as yup from "yup";
-import { Config } from "../shared/config";
+  VStack,
+} from '@chakra-ui/react';
+import { useHashParamJson } from '@metapages/hash-query';
 
 const validationSchema = yup.object({
   modules: yup.array().of(yup.string()),
@@ -21,15 +31,15 @@ const validationSchema = yup.object({
 interface FormType
   extends yup.InferType<typeof validationSchema> {}
 
-export const FormModulesAndCss: React.FC<{
-  config: Config;
-  setConfig: (config: Config) => void;
-}> = ({ config, setConfig }) => {
+export const FormModulesAndCss: React.FC = () => {
+
+  const [modules, setModules] = useHashParamJson<string[]>("modules");
+
   const onSubmit = useCallback(
     (values: FormType) => {
-      setConfig({ ...config, modules: values.modules });
+      setModules(values.modules);
     },
-    [config, setConfig]
+    [modules, setModules]
   );
 
   return (
@@ -46,7 +56,7 @@ export const FormModulesAndCss: React.FC<{
         align="stretch"
       >
         <Formik
-          initialValues={config}
+          initialValues={{modules : modules || []}}
           onSubmit={onSubmit}
           validationSchema={validationSchema}
         >

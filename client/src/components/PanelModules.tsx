@@ -1,16 +1,23 @@
-import { SimpleGrid } from "@chakra-ui/react";
-import { useHashParamJson } from "@metapages/hash-query";
-import { Config, ConfigDefault } from "/@/shared/config";
-import { FormDefinition } from "./FormDefinition";
-import { FormModulesAndCss } from "./FormModulesAndCss";
+import {
+  Box,
+  HStack,
+  SimpleGrid,
+  VStack,
+} from '@chakra-ui/react';
+
+import { FormModulesAndCss } from './FormModulesAndCss';
 
 export const PanelModules: React.FC = () => {
-  const [config, setConfig] = useHashParamJson<Config>("c", ConfigDefault);
   return (
-    <SimpleGrid columns={2} spacing={10} width="100%">
-      <FormModulesAndCss config={config} setConfig={setConfig} />
+    <HStack w="100%" h="100%" spacing="0px">
+      <VStack w="100%" h="100%" alignItems="flex-start" bg="white">
+        <SimpleGrid columns={1}  width="100%" p={10}>
+          <FormModulesAndCss  />
 
-      <FormDefinition config={config} setConfig={setConfig} />
-    </SimpleGrid>
+          {/* <FormDefinition /> */}
+        </SimpleGrid>
+      </VStack>
+      <Box w="100%"></Box>
+    </HStack>
   );
 };

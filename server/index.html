@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Metaframe JS</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0px;
+        border: 0;
+        /* No floating content on sides */
+        display: block;
+        background:none transparent;
+        /* background-color: blueviolet; */
+      }
+      .transparent {
+        background: none transparent;
+      }
+      /* apply a natural box layout model to all elements, but allowing components to change */
+      /* https://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
+      html {
+        box-sizing: border-box;
+      }
+      *,
+      *:before,
+      *:after {
+        box-sizing: inherit;
+      }
+
+      .menu-button {
+        position: absolute;
+        top: 10px;
+        left: calc(100vw - 50px);
+        z-index: 1000;
+        background-color: transparent;
+        border: 0px;
+        padding: 0px;
+        margin: 0px;
+        width: 40px;
+        height: 40px;
+        /* background-color: red; */
+      }
+
+      .container {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        justify-content: center;
+        align-items: stretch;
+        gap: 0px;
+      }
+
+      .container-with-editor {
+        /* display: flex;
+        flex-direction: row-reverse; */
+        width: 100vw;
+        height: 100vh;
+        /* justify-content: flex-start;
+        align-items: stretch;
+        gap: 0px; */
+      }
+
+      .root {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .root-with-editor {
+        position: absolute;
+        top: 60px;
+        left: 50%;
+        width: 50%;
+        max-width: 50%;
+        height: calc(100vh - 60px);
+        max-height: calc(100vh - 60px);
+      }
+
+      /**
+       * Special handling of iframes for ensuring the metaframe is correctly maximized.
+       */
+
+      .iframe-container {
+        position: absolute;
+        width: 100%;
+        min-width: 100%;
+      }
+
+      .iframe-container iframe {
+        overflow: hidden;
+        border: 0;
+        min-height: 100vh;
+        max-height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+      }
+      iframe {
+        width: 100%;
+      }
+
+      /* .borderFatSolidGreen {
+        border: 5px solid green;
+      }
+
+      .borderDashedPurple {
+        border: 4px dashed purple;
+      }
+
+      .borderDashedRed {
+        border: 2px dashed red;
+      }
+
+      .borderDashedBlue {
+        border: 2px dashed blue;
+      } */
+    </style>
+
+    <!-- Manually converted ts-js from https://github.com/metapages/hash-query/blob/main/src/lib/util.ts -->
+    <script>
+
+      const isIframe = () => {
+        //http://stackoverflow.com/questions/326069/how-to-identify-if-a-webpage-is-being-loaded-inside-an-iframe-or-directly-into-t
+        try {
+          return window !== window.top
+        } catch (ignored) {
+          return false
+        }
+      }
+
+      const blobToBase64String = blob => {
+        return btoa(encodeURIComponent(JSON.stringify(blob)))
+      }
+
+      const blobFromBase64String = value => {
+        if (value && value.length > 0) {
+          const blob = JSON.parse(decodeURIComponent(atob(value)))
+          return blob
+        }
+        return undefined
+      }
+
+      // Get everything after # then after ?
+      const getUrlHashParams = url => {
+        const urlBlob = new URL(url)
+        return getUrlHashParamsFromHashString(urlBlob.hash)
+      }
+
+      const getUrlHashParamsFromHashString = hash => {
+        let hashString = hash
+        while (hashString.startsWith("#")) {
+          hashString = hashString.substring(1)
+        }
+
+        const queryIndex = hashString.indexOf("?")
+        if (queryIndex === -1) {
+          return [hashString, {}]
+        }
+        const preHashString = hashString.substring(0, queryIndex)
+        hashString = hashString.substring(queryIndex + 1)
+        const hashObject = {}
+        hashString
+          .split("&")
+          .filter(s => s.length > 0)
+          .map(s => {
+            const dividerIndex = s.indexOf("=")
+            if (dividerIndex === -1) {
+              return [s, ""]
+            }
+            const key = s.substring(0, dividerIndex)
+            const value = s.substring(dividerIndex + 1)
+            return [key, value]
+          })
+          .forEach(([key, value]) => {
+            hashObject[key] = value
+          })
+
+        Object.keys(hashObject).forEach(key => {
+          try {
+            hashObject[key] = decodeURI(hashObject[key])
+          } catch (ignored) {
+            hashObject[key] = hashObject[key]
+          }
+        })
+        return [preHashString, hashObject]
+      }
+
+      const getHashParamValue = (url, key) => {
+        const [_, hashParams] = getUrlHashParams(url)
+        return hashParams[key]
+      }
+
+      const getHashParamValueJson = (url, key) => {
+        const valueString = getHashParamValue(url, key)
+        if (valueString && valueString !== "") {
+          const value = blobFromBase64String(valueString)
+          return value
+        }
+        return
+      }
+
+      const getHashParamFromWindow = key => {
+        return getHashParamsFromWindow()[1][key]
+      }
+
+      const getHashParamsFromWindow = () => {
+        return getUrlHashParams(window.location.href)
+      }
+
+      const getHashParamValueDecodedBase64FromWindow = key => {
+        return getHashParamValueDecodedBase64(window.location.href, key)
+      }
+
+      const getHashParamValueJsonFromWindow = key => {
+        return getHashParamValueJson(window.location.href, key)
+      }
+
+      const getHashParamValueDecodedBase64 = (url, key) => {
+        const valueString = getHashParamValue(url, key)
+        if (valueString && valueString !== "") {
+          const value = atob(valueString)
+          return value
+        }
+        return
+      }
+
+      const setHashParamInWindow = (key, value, opts) => {
+        const hash = window.location.hash.startsWith("#")
+          ? window.location.hash.substring(1)
+          : window.location.hash
+        const newHash = setHashValueInHashString(hash, key, value)
+        if (newHash === hash) {
+          return
+        }
+
+        if (opts?.modifyHistory) {
+          // adds to browser history, so affects back button
+          // fires "hashchange" event
+          window.location.hash = newHash
+        } else {
+          // The following will NOT work to trigger a 'hashchange' event:
+          // Replace the state so the back button works correctly
+          window.history.replaceState(
+            null,
+            document.title,
+            `${window.location.pathname}${window.location.search}${
+              newHash.startsWith("#") ? "" : "#"
+            }${newHash}`
+          )
+          // Manually trigger a hashchange event:
+          // I don't know how to add the previous and new url parameters
+          window.dispatchEvent(new HashChangeEvent("hashchange"))
+        }
+      }
+
+      const setHashParamJsonInWindow = (key, value, opts) => {
+        const valueString = value ? blobToBase64String(value) : undefined
+        setHashParamInWindow(key, valueString, opts)
+      }
+
+      // returns hash string
+      const setHashValueInHashString = (hash, key, value) => {
+        const [preHashParamString, hashObject] = getUrlHashParamsFromHashString(hash)
+
+        let changed = false
+        if (
+          (hashObject.hasOwnProperty(key) && value === null) ||
+          value === undefined
+        ) {
+          delete hashObject[key]
+          changed = true
+        } else {
+          if (hashObject[key] !== value) {
+            hashObject[key] = value
+            changed = true
+          }
+        }
+
+        // don't do work if unneeded
+        if (!changed) {
+          return hash
+        }
+
+        const keys = Object.keys(hashObject)
+        keys.sort()
+        const hashStringNew = keys
+          .map((key, i) => {
+            return `${key}=${encodeURI(hashObject[key])}`
+          })
+          .join("&")
+        // replace after the ? but keep before that
+        return `${preHashParamString}?${hashStringNew}`
+      }
+
+      const setHashValueJsonInHashString = (hash, key, value) => {
+        const valueString = value ? blobToBase64String(value) : undefined
+        return setHashValueInHashString(hash, key, valueString)
+      }
+
+      // returns URL string
+      const setHashValueInUrl = (url, key, value) => {
+        const urlBlob = new URL(url)
+        const newHash = setHashValueInHashString(urlBlob.hash, key, value)
+        urlBlob.hash = newHash
+        return urlBlob.href
+      }
+
+      // returns URL string
+      const setHashValueJsonInUrl = (url, key, value) => {
+        const urlBlob = new URL(url)
+        urlBlob.hash = setHashValueJsonInHashString(urlBlob.hash, key, value)
+        return urlBlob.href
+      }
+
+
+    </script>
+
+
+
+    <script>
+      // const stringToBase64String = (value) => {
+      //   return btoa(encodeURIComponent(value));
+      // };
+
+      // const blobToBase64String = (blob) => {
+      //   return stringToBase64String(JSON.stringify(blob));
+      // };
+
+      const getQueryParamValueJsonFromWindow = (key) => {
+        const url = new URL(window.location.href);
+        const valueString = url.searchParams.get(key);
+
+        if (valueString && valueString !== "") {
+          const value = blobFromBase64String(valueString);
+          return value;
+        }
+        return;
+      };
+
+      const stringFromBase64String = (value) => {
+        if (value && value.length > 0) {
+          return decodeURIComponent(atob(value));
+        }
+        return undefined;
+      };
+
+      const getJsFromUrl = () => {
+        const [prefix, hashParams] = getUrlHashParamsFromHashString(
+          window.location.hash
+        );
+        let jsFromUrl = hashParams.js;
+
+        // expecting js code via hash params, but that fails to embed in some places e.g. notion
+        // so also allow js from query params if none in hash params
+        if (!jsFromUrl) {
+          jsFromUrl = new URL(window.location.href).searchParams.get("js");
+        }
+
+        if (jsFromUrl) {
+          jsFromUrl = stringFromBase64String(jsFromUrl);
+        }
+
+        return jsFromUrl;
+      };
+
+      const setJsInUrl = (js) => {
+        setHashParamInWindow("js", stringToBase64String(js));
+      };
+
+      // Dynamcially add <script> and <link> tags to the document.head
+      let modules = getHashParamValueJsonFromWindow("modules");
+
+      if (!modules) {
+        let moduleString = new URL(window.location.href).searchParams.get("modules");
+        if (moduleString) {
+          modules = JSON.parse(stringFromBase64String(moduleString));
+        }
+      }
+
+      if (!modules) {
+        const v1Config = getQueryParamValueJsonFromWindow("c");
+        modules = v1Config?.modules;
+        if (modules) {
+          setHashParamJsonInWindow("modules", modules);
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete("c");
+          console.log("newUrl.href", newUrl.href);
+          window.location.href = newUrl.href;
+        }
+      }
+
+      if (modules) {
+        let foundImportMap = false;
+        modules.forEach((s) => {
+          if (!foundImportMap && s.startsWith("{")) {
+            try {
+              const maybeImports = JSON.parse(decodeURIComponent(s));
+              if (maybeImports.imports) {
+                var importMapElement = document.createElement("script");
+                importMapElement.innerHTML = decodeURIComponent(s);
+                importMapElement.type = "importmap";
+                document
+                  .getElementsByTagName("head")[0]
+                  .appendChild(importMapElement);
+                return;
+              }
+            } catch (e) {
+              console.log("error loading module", s);
+              return;
+            }
+          } else if (s.endsWith(".js")) {
+            const scriptImport = document.createElement("script");
+            scriptImport.src = s;
+
+            document.getElementsByTagName("head")[0].appendChild(scriptImport);
+          } else {
+            let elementTrimmed = s.trim();
+            if (elementTrimmed.startsWith("<link")) {
+              const href = /<link\s+.*href="([^"]*)"/.exec(elementTrimmed)?.[1];
+              if (href) {
+                const linkImport = document.createElement("link");
+                linkImport.href = href;
+                const linkRel = /<link\s+.*rel="([^"]*)"/.exec(elementTrimmed)?.[1];
+                if (linkRel) {
+                  linkImport.rel = linkRel;
+                }
+                const linkType = /<link\s+.*type="([^"]*)"/.exec(elementTrimmed)?.[1];
+                if (linkType) {
+                  linkImport.type = linkType;
+                }
+
+                const linkCrossorigin = /<link\s+.*crossorigin="([^"]*)"/.exec(elementTrimmed)?.[1];
+                if (linkCrossorigin) {
+                  linkImport.crossorigin = linkCrossorigin;
+                }
+
+                document.getElementsByTagName("head")[0].appendChild(linkImport);
+              }
+            } else if (elementTrimmed.startsWith("<script")) {
+              const src = /<script\s+.*src="([^"]*)"/.exec(elementTrimmed)?.[1];
+              if (src) {
+                const scriptImport = document.createElement("script");
+                scriptImport.src = src;
+                const scriptType = /<script\s+.*type="([^"]*)"/.exec(
+                  elementTrimmed
+                )?.[1];
+                if (scriptType) {
+                  scriptImport.type = scriptType
+                }
+                const scriptCrossorigin = /<script\s+.*crossorigin="([^"]*)"/.exec(elementTrimmed)?.[1];
+                if (scriptCrossorigin) {
+                  scriptImport.crossorigin = scriptCrossorigin;
+                }
+                document.getElementsByTagName("head")[0].appendChild(scriptImport);
+              }
+            }
+          }
+        });
+      }
+
+      // TODO: do same as above (modules in hash params) for config
+
+      const runJsFromUrl = async () => {
+        // if there is a scriptUnload function, run it
+        // The previous script has the option to put a cleanup function on the window
+        if (window.scriptUnload) {
+          try {
+            window.scriptUnload();
+          } catch (err) {
+            console.error("Error running window.scriptUnload()", err);
+          }
+        }
+        window.scriptUnload = null;
+        // clear all children of root (only can be there from user js code)
+        document.getElementById("root").textContent = "";
+
+        let js = getJsFromUrl();
+        
+        // BACKWARDS COMPATIBILITY
+        // /^(return\s+\(\)\s+=>\s+{)/
+
+
+        if (js) {
+          // replace script element
+          if (document.getElementById("custom-exec-js")) {
+            document.getElementById("custom-exec-js").remove();
+          }
+
+          var scriptElement = document.createElement("script");
+          scriptElement.id = "custom-exec-js";
+          scriptElement.type = "module";
+          scriptElement.innerHTML = js;
+          document.body.appendChild(scriptElement);
+        }
+      };
+
+    </script>
+    <script type="module">
+      import {
+        Metapage,
+        Metaframe,
+      } from "https://cdn.jsdelivr.net/npm/@metapages/metapage@0.13.10-alpha1/dist/index.mjs";
+
+      // Examine URL, and add modules
+      window.metapage = {
+        Metapage,
+        Metaframe,
+      };
+
+      if (!window.metaframe) {
+        window.metaframe = new Metaframe();
+      }
+      var metaframe = window.metaframe;
+
+      // document.addEventListener("DOMContentLoaded", runJsFromUrl);
+      window.addEventListener("load", runJsFromUrl);
+    </script>
+  </head>
+  <body>
+    <button id="menu-button" class="btn-highlight btn-icon menu-button">
+      <div class="svgicon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#000000"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </div>
+    </button>
+    <script>
+      
+
+      const metapageDef = {
+        metaframes: {
+          editor: {
+            url: `${window.location.origin}/editor/#?c=eyJtb2R1bGVzIjpbXX0=`,
+          },
+        },
+        version: "0.3",
+      };
+
+      const onMenuClick = async () => {
+        // if there is an existing editor, remove it, then exit
+        if (document.getElementById("iframe-container")) {
+          if (window.metapageEditor) {
+            window.metapageEditor.dispose();
+            window.metapageEditor = null;
+          }
+          const previousContainer = document.getElementById("iframe-container");
+          if (previousContainer) {
+            previousContainer.parentElement.removeChild(previousContainer);
+          }
+          document.getElementById("root").className =
+            "root borderFatSolidGreen";
+          document.getElementById("container").className =
+            "container borderDashedBlue";
+          // console.log("found, removing/toggling OFF");
+          runJsFromUrl();
+          return;
+        }
+
+        // no previous editor detected, add the editor metapage
+        // listen to the editor metapage for changes to the editor url hash
+        // and make that our own url hash
+        document.getElementById("root").className =
+          "root-with-editor borderFatSolidGreen";
+        document.getElementById("container").className =
+          "container-with-editor borderDashedBlue";
+
+        // Modify the metapage editor url hash to our own
+        const editorUrl = new URL(metapageDef.metaframes.editor.url);
+        editorUrl.hash = window.location.hash;
+        metapageDef.metaframes.editor.url = editorUrl.href;
+
+        const mp = window.metapage.Metapage.from(metapageDef);
+        window.metapageEditor = mp;
+        const editorMetaframe = mp.getMetaframe("editor");
+        const iframe = await editorMetaframe.iframe;
+
+        var iframeDivContainer = document.createElement("div");
+        iframeDivContainer.id = "iframe-container";
+        iframeDivContainer.className = "iframe-container";
+        iframeDivContainer.appendChild(iframe);
+
+        document.getElementById("container").prepend(iframeDivContainer);
+        runJsFromUrl();
+
+        editorMetaframe.onOutput("text", (text) => {
+          setJsInUrl(text);
+          runJsFromUrl();
+        });
+
+        let pending;
+        const updateCode = (hash) => {
+          if (pending) {
+            clearTimeout(pending);
+          }
+          pending = setTimeout(() => {
+            pending = null;
+            window.location.hash = hash;
+            runJsFromUrl();
+          }, 400);
+        };
+        mp.addListener(window.metapage.Metapage.DEFINITION, (event) => {
+          const url = event?.definition?.metaframes?.editor?.url;
+          if (url) {
+            const urlBlob = new URL(url);
+            const newHash = urlBlob.hash;
+            updateCode(newHash);
+          }
+        });
+      };
+
+      document
+        .getElementById("menu-button")
+        .addEventListener("click", onMenuClick);
+
+      // If there is no code, show the editor
+      if (!getJsFromUrl()) {
+        // document.addEventListener("DOMContentLoaded", () => {
+        //   onMenuClick();
+        // });
+        window.addEventListener("load", () => {
+          onMenuClick();
+        });
+      } else {
+        // only show the edit button if we are NOT in an iframe
+        // this will be turned into a configurable option later, but no time rn
+        if (isIframe() && !(hashParams["edit"] === "true" || hashParams["edit"] === "1")) {
+          document.getElementById("menu-button").style.display = "none";
+        }
+      }
+    </script>
+
+    <div id="container" class="container borderDashedPurple transparent">
+      <div id="root" class="root borderFatSolidGreen transparent"></div>
+    </div>
+  </body>
+</html>

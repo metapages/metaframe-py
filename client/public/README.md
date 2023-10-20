@@ -1,4 +1,73 @@
+This help is partially obsolete, rewrite this:
+ - put the metaframe/page stuff at the bottom
+ - link the github repo here
+ - give code examples for e.g. 
+   - resizing root dive detection on on editor mode
+   - waiting until the metaframe is loaded
+   - setting a cleanup/dispose function for when reloading the js code 
+
+
+## Useful code snippets
+
+### Get the root display div element
+
+```javascript
+const root = document.getElementById("root");
+
+// All your elements go into "root".
+
+```
+
+### Wait until page `load` or `DOMContentLoaded`
+
+You don't need to wait for the `load` or `DOMContentLoaded` event, your script will not run until `DOMContentLoaded` is fired.
+
+### Window resize
+
+Resizing happens when the editor layer is active. You might want to listen to this resize for e.g. graphical effects.
+
+Example, listening to both the window resize event and the local `div` element resize:
+
+```javascript
+const handleResize = () => {
+	const width = root.getBoundingClientRect().width;
+	const height = root.getBoundingClientRect().height;
+  // Your own code here, handling the resize
+}
+
+
+window.addEventListener("resize", handleResize, false);
+
+const resizeObserver = new ResizeObserver((entries) => handleResize);
+resizeObserver.observe(root);
+
+window.scriptUnload = () => {
+	resizeObserver.disconnect();
+	window.removeEventListener("resize", handleResize);
+}
+
+```
+
+
+### Unload/cleanup
+
+When iterating with the code editor, the script is removed then re-added to the dom. Despite removing the script tag, the script itself is still in the javascript engine. In some cases, this can cause problems as multiple listeners maybe responding to the same event.
+
+This is not an issue when simply running the page with code, since it only runs once.
+
+To have your script cleaned up because of new script (when editing), set a function `scriptUnload` on the window, this will be called prior to a new script added:
+
+```javascript
+window.scriptUnload = () => {
+	console.log("internal scriptUnload call")
+	// do your cleanup here
+}
+```
+
 # Run user javascript in a metaframe
+
+
+
 
 This is a metaframe:
 

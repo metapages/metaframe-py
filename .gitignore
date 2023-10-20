@@ -6,3 +6,7 @@
 /.env
 # ignored on the main branch, force-added on the gh-pages branch
 docs
+
+.traefik/certs
+
+/deploy

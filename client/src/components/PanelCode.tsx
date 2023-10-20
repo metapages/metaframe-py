@@ -1,38 +1,41 @@
-import { useCallback, useRef, useState } from "react";
-import { Box, Heading, HStack, VStack } from "@chakra-ui/react";
-import { useHashParamBase64 } from "@metapages/hash-query";
-import { MetaframeInputMap } from "@metapages/metapage";
-import { MetaframeStandaloneComponent } from "@metapages/metapage-embed-react";
-import { useMetaframeUrl } from "/@/hooks/useMetaframeUrl";
+import {
+  useCallback,
+  useRef,
+} from 'react';
+
+import { useMetaframeUrl } from '/@/hooks/useMetaframeUrl';
+
+import {
+  Box,
+  HStack,
+  VStack,
+} from '@chakra-ui/react';
+import { useHashParamBase64 } from '@metapages/hash-query';
+import { MetaframeInputMap } from '@metapages/metapage';
+import { MetaframeStandaloneComponent } from '@metapages/metapage-embed-react';
 
 export const PanelCode: React.FC = () => {
   const [code, setCode] = useHashParamBase64("js");
   const { url } = useMetaframeUrl();
 
+  // spacing={10}
   return (
-    <HStack width="100%" spacing={10}>
-      <VStack width="100%" alignItems="flex-start">
-        <Heading size="sm">Javascript code</Heading>
-
+    <HStack width="100%" justifyContent="flex-start" h="100%" spacing="0px">
+      <VStack width="100%" alignItems="flex-start" bg="white" h="100%">
         <Box
-          height="400px"
+          height="100%"
           width="100%"
-          borderWidth="1px"
-          p={2}
+          // borderWidth="1px"
+          // p={2}
           rounded="md"
           overflow="scroll"
+          className="transparent borderFatSolidOrange"
         >
           {url ? <LocalEditor code={code} setCode={setCode} /> : null}
         </Box>
       </VStack>
 
-      <VStack width="100%" alignItems="flex-start">
-        <Heading size="sm">Metaframe running code</Heading>
-
-        <Box height="400px" width="100%" borderWidth="1px" p={2} rounded="md">
-          {url ? <MetaframeStandaloneComponent url={url} /> : null}
-        </Box>
-      </VStack>
+      <VStack width="100%" alignItems="flex-start"></VStack>
     </HStack>
   );
 };
@@ -54,7 +57,7 @@ const LocalEditor: React.FC<{
   return (
     <MetaframeStandaloneComponent
       url={
-        "https://editor.mtfm.io/#?options=eyJhdXRvc2VuZCI6dHJ1ZSwiaGlkZW1lbnVpZmlmcmFtZSI6dHJ1ZSwibW9kZSI6ImphdmFzY3JpcHQiLCJzYXZlbG9hZGluaGFzaCI6dHJ1ZSwidGhlbWUiOiJ2cy1kYXJrIn0="
+        "https://editor.mtfm.io/#?hm=disabled&options=JTdCJTIyYXV0b3NlbmQlMjIlM0F0cnVlJTJDJTIybW9kZSUyMiUzQSUyMmphdmFzY3JpcHQlMjIlMkMlMjJzYXZlbG9hZGluaGFzaCUyMiUzQXRydWUlMkMlMjJ0aGVtZSUyMiUzQSUyMnZzLWRhcmslMjIlN0Q="
       }
       inputs={inputs.current}
       onOutputs={onCodeOutputsUpdate}

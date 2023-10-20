@@ -1,5 +1,4 @@
 name: Deploy
-# on: [push]
 
 on:
   push:
@@ -15,14 +14,30 @@ jobs:
       contents: read # Needed to clone the repository
 
     steps:
-      - name: Clone repository
-        uses: actions/checkout@v2
+      - name: Clone repo
+        uses: actions/checkout@v3
+        with:
+          # token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          fetch-depth: '0'
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+
+      - name: Setup just
+        uses: extractions/setup-just@v1
+        with:
+          just-version: '1.14.0'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.32.1
 
       # TODO: add a build step here
+      - name: deno deploy
+        env:
+          DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
+        run: just publish
 
-      - name: Upload to Deno Deploy
-        uses: denoland/deployctl@v1
-        with:
-          project: "metaframe-js"
-          entrypoint: "./server/server.ts"
-          root: ./

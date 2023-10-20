@@ -7,3 +7,4 @@
 /dist
 # dependencies
 node_modules
+src/debug.css

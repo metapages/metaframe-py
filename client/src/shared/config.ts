@@ -1,6 +1,6 @@
 // Shared between client and server
 
-import { MetaframeDefinitionV6 } from "@metapages/metapage";
+import { MetaframeDefinitionV6 } from '@metapages/metapage';
 
 export interface ConfigOptions {
   // console
@@ -15,9 +15,9 @@ export interface Config {
   opt?: ConfigOptions;
 }
 
-export const ConfigDefault: Config = {
-  modules: [],
-};
+// export const ConfigDefault: Config = {
+//   modules: [],
+// };
 
 interface UrlEncodedConfigV1 {
   modules: string[];

@@ -1,18 +1,21 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
+
+import { useFormik } from 'formik';
+import * as yup from 'yup';
+
 import {
-  VStack,
+  Button,
+  FormControl,
+  Heading,
   HStack,
   InputGroup,
-  Spacer,
-  Button,
-  Heading,
   Link,
-  FormControl,
+  Spacer,
   Textarea,
-} from "@chakra-ui/react";
-import { useFormik } from "formik";
-import * as yup from "yup";
-import { Config } from "../shared/config";
+  VStack,
+} from '@chakra-ui/react';
+import { useHashParamJson } from '@metapages/hash-query';
+import { MetaframeDefinitionV6 } from '@metapages/metapage';
 
 const validationSchema = yup.object({
   metaframeDefinition: yup.string(),
@@ -20,26 +23,23 @@ const validationSchema = yup.object({
 
 interface FormType extends yup.InferType<typeof validationSchema> {}
 
-export const FormDefinition: React.FC<{
-  config: Config;
-  setConfig: (config: Config) => void;
-}> = ({ config, setConfig }) => {
+export const FormDefinition: React.FC = () => {
+
+  // definition?: MetaframeDefinitionV6;
+  const [config, setConfig] = useHashParamJson<MetaframeDefinitionV6>("mfjson");
   const onSubmit = useCallback(
     (values: FormType) => {
-      setConfig({
-        ...config,
-        definition: values.metaframeDefinition
-          ? JSON.parse(values.metaframeDefinition)
-          : undefined,
-      });
+      setConfig(values.metaframeDefinition
+        ? JSON.parse(values.metaframeDefinition)
+        : undefined);
     },
     [config, setConfig]
   );
 
   const formik = useFormik({
     initialValues: {
-      metaframeDefinition: config.definition
-        ? JSON.stringify(config.definition, null, 2)
+      metaframeDefinition: config
+        ? JSON.stringify(config, null, 2)
         : "",
     },
     onSubmit,

@@ -1,20 +1,42 @@
 import {
+  useEffect,
+  useState,
+} from 'react';
+
+import {
   setHashValueInHashString,
+  setHashValueJsonInUrl,
   stringToBase64String,
   useHashParamBase64,
   useHashParamJson,
-} from "@metapages/hash-query";
-import { useEffect, useState } from "react";
-import { Config, ConfigDefault, configToUrl } from "../shared/config";
+} from '@metapages/hash-query';
+import { MetaframeDefinitionV6 } from '@metapages/metapage';
+
+import { ConfigOptions } from '../shared/config';
 
 export const useMetaframeUrl = () => {
   const [url, setUrl] = useState<string>();
   const [code] = useHashParamBase64("js");
-  const [config] = useHashParamJson<Config>("c", ConfigDefault);
+  const [config] = useHashParamJson<ConfigOptions>("c");
+  const [metaframeDef] = useHashParamJson<MetaframeDefinitionV6>("mfjson");
+  const [modules] = useHashParamJson<string[]>("modules");
   // update the url
   useEffect(() => {
-    const url = new URL(window.location.href);
-    configToUrl(url, config);
+    // const url = new URL(window.location.href);
+
+    let href = window.location.href;
+    if (metaframeDef) {
+      href = setHashValueJsonInUrl(href, "mfjson", metaframeDef);
+    }
+    if (modules) {
+      href = setHashValueJsonInUrl(href, "modules", modules);
+    }
+    if (config) {
+      href = setHashValueJsonInUrl(href, "c", config);
+    }
+
+    const url = new URL(href);
+
     url.pathname = "";
     url.host = import.meta.env.VITE_SERVER_ORIGIN.split(":")[0];
     url.port = import.meta.env.VITE_SERVER_ORIGIN.split(":")[1];
@@ -29,10 +51,10 @@ export const useMetaframeUrl = () => {
       );
     }
     // Remove the c and v hash params since they are set in the searchParams
-    url.hash = setHashValueInHashString(url.hash, "c", null);
-    url.hash = setHashValueInHashString(url.hash, "v", null);
+    // url.hash = setHashValueInHashString(url.hash, "c", null);
+    // url.hash = setHashValueInHashString(url.hash, "v", null);
     setUrl(url.href);
-  }, [config, code, setUrl]);
+  }, [config, code, metaframeDef, modules, setUrl]);
 
   return { url };
 };
