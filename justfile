@@ -32,10 +32,10 @@ grey                               := "\\e[90m"
 open:
   deno run --allow-all --unstable https://deno.land/x/metapages@v0.0.17/exec/open_url.ts 'https://metapages.github.io/load-page-when-available/?url=https://{{APP_FQDN}}:{{APP_PORT}}'
 
-@publish: _ensure_deployctl
+publish: _ensure_deployctl
   #!/usr/bin/env bash
   set -euo pipefail
-  build the client in client/dist
+  # build the client in client/dist
   just client/build
   rm -rf deploy
   mkdir -p deploy
