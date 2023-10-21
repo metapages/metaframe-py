@@ -37,6 +37,7 @@ export const useMetaframeUrl = () => {
 
     const url = new URL(href);
 
+    // I am not sure about this anymore
     url.pathname = "";
     url.host = import.meta.env.VITE_SERVER_ORIGIN.split(":")[0];
     url.port = import.meta.env.VITE_SERVER_ORIGIN.split(":")[1];

@@ -66,7 +66,7 @@ build BASE="editor": _css-debug-layer-setup _ensure_npm_modules (_tsc "--build")
     PORT={{APP_PORT}} \
     OUTDIR=dist \
     BASE={{BASE}} \
-        deno run --allow-all --unstable {{DENO_SOURCE}}/browser/vite-build.ts
+        deno run --allow-all --unstable {{DENO_SOURCE}}/browser/vite-build.ts 
 
 # Test: currently bare minimum: only building. Need proper test harness.
 @test: _css-debug-layer-setup (_tsc "--build")
@@ -110,7 +110,14 @@ clean:
 
 # Rebuild the client on changes, but do not serve
 watch BUILD_SUB_DIR="":
-    watchexec -w src -w tsconfig.json -w package.json -w vite.config.ts -- just _build
+    VITE_SERVER_ORIGIN={{SERVER_ORIGIN}} \
+    HOST={{APP_FQDN}} \
+    PORT={{APP_PORT}} \
+    OUTDIR=dist \
+    BASE=editor \
+        just _vite "build --watch"
+    @# watchexec -w src -w tsconfig.json -w package.json -w vite.config.ts -- just build
+    @# vite.config.ts
 
 # Watch and serve browser client. Can't use vite to serve: https://github.com/vitejs/vite/issues/2754
 serve BASE="": _mkcert (build BASE)

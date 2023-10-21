@@ -370,24 +370,41 @@
 
       // Dynamcially add <script> and <link> tags to the document.head
       let modules = getHashParamValueJsonFromWindow("modules");
-
+      let resetUrlWithFixedModules = false;
       if (!modules) {
         let moduleString = new URL(window.location.href).searchParams.get("modules");
         if (moduleString) {
           modules = JSON.parse(stringFromBase64String(moduleString));
+          resetUrlWithFixedModules = true;
         }
       }
 
+      let v1Config;
       if (!modules) {
-        const v1Config = getQueryParamValueJsonFromWindow("c");
+        v1Config = getQueryParamValueJsonFromWindow("c");
+        if (!v1Config) {
+          v1Config = getHashParamValueJsonFromWindow("c");
+        }
         modules = v1Config?.modules;
         if (modules) {
-          setHashParamJsonInWindow("modules", modules);
-          const newUrl = new URL(window.location.href);
-          newUrl.searchParams.delete("c");
-          console.log("newUrl.href", newUrl.href);
-          window.location.href = newUrl.href;
+          resetUrlWithFixedModules = true;
         }
+      }
+
+      if (resetUrlWithFixedModules) {
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete("c");
+        newUrl.searchParams.delete("modules");
+
+        let currentHash = newUrl.hash;
+        currentHash = setHashValueJsonInHashString(currentHash, "modules", modules);
+        // TODO This works because we don't currently use config, but this will break stuff later
+        v1Config = v1Config || {};
+        delete v1Config.modules;
+        currentHash = setHashValueInHashString(currentHash, "c", Object.keys(v1Config).length === 0 ? undefined : v1Config);
+        newUrl.hash = currentHash;
+        // drastic, force reload, this could be done better
+        window.history.replaceState(null, document.title, newUrl.href);
       }
 
       if (modules) {
