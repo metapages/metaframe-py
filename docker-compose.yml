@@ -3,12 +3,9 @@ version: "2.4"
 services:
 
   server:
-    # build:
-    #   context: server
     image: denoland/deno:alpine-1.32.5
     command: deno run -A --watch=server/ server/server.ts
     working_dir: /app
-    # command: deno run --watch --allow-net server.ts
     healthcheck:
       test: curl --fail http://localhost:3000/healthz || exit 1
       interval: 5s
@@ -31,6 +28,41 @@ services:
       - traefik.enable=true
       - traefik.http.routers.app.tls=true
       - traefik.http.routers.app.rule=Host("${APP_FQDN:-server1.localhost}")
+
+  client:
+    build:
+      context: ./client
+      # dockerfile: Dockerfile
+    command: just dev
+    working_dir: /app/client
+    healthcheck:
+      test: curl --fail http://localhost:3000/healthz || exit 1
+      interval: 5s
+      timeout: 1s
+    environment:
+      - "APP_PORT_BROWSER=4440"
+      - "APP_FQDN=${APP_FQDN:-server1.localhost}"
+      - BASE=editor
+    expose:
+      - 4440
+    volumes:
+      - node_modules:/app/client/node_modules
+      - ./client/dist:/app/client/dist
+      - ./client/public:/app/client/public
+      - ./client/src:/app/client/src
+      - ./client/index.html:/app/client/index.html
+      - ./client/justfile:/app/client/justfile
+      - ./client/package.json:/app/client/package.json
+      - ./client/package-lock.json:/app/client/package-lock.json
+      - ./client/tsconfig.json:/app/client/tsconfig.json
+      - ./client/vite.config.ts:/app/client/vite.config.ts
+      - ./.git:/app/.git
+    logging:
+      driver: ${LOGGING_SERVER:-local}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.app.tls=true
+      - traefik.http.routers.app.rule=Host("${APP_FQDN:-server1.localhost}") && PathPrefix(`/editor`)
 
   traefik:
     image: "traefik:v2.10.4"

@@ -401,8 +401,9 @@
         // TODO This works because we don't currently use config, but this will break stuff later
         v1Config = v1Config || {};
         delete v1Config.modules;
-        currentHash = setHashValueInHashString(currentHash, "c", Object.keys(v1Config).length === 0 ? undefined : v1Config);
+        currentHash = setHashValueJsonInHashString(currentHash, "c", Object.keys(v1Config).length === 0 ? undefined : v1Config);
         newUrl.hash = currentHash;
+        newUrl.searchParams.delete("v");
         // drastic, force reload, this could be done better
         window.history.replaceState(null, document.title, newUrl.href);
       }
@@ -532,6 +533,8 @@
 
       // document.addEventListener("DOMContentLoaded", runJsFromUrl);
       window.addEventListener("load", runJsFromUrl);
+      // reload on hash changes
+      window.addEventListener("hashchange",runJsFromUrl,false);
     </script>
   </head>
   <body>
@@ -612,10 +615,10 @@
         document.getElementById("container").prepend(iframeDivContainer);
         runJsFromUrl();
 
-        editorMetaframe.onOutput("text", (text) => {
-          setJsInUrl(text);
-          runJsFromUrl();
-        });
+        // editorMetaframe.onOutput("text", (text) => {
+        //   setJsInUrl(text);
+        //   // runJsFromUrl();
+        // });
 
         let pending;
         const updateCode = (hash) => {
@@ -625,7 +628,7 @@
           pending = setTimeout(() => {
             pending = null;
             window.location.hash = hash;
-            runJsFromUrl();
+            // runJsFromUrl();
           }, 400);
         };
         mp.addListener(window.metapage.Metapage.DEFINITION, (event) => {
