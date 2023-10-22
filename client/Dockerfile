@@ -11,7 +11,7 @@ RUN apk --no-cache --update add \
     ripgrep
 
 # Needs edge repo
-RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
+RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/community \
     sd
 
 ###############################################################################

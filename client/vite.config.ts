@@ -1,7 +1,8 @@
-import fs from "fs";
-import { resolve } from "path";
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import fs from 'fs';
+import { resolve } from 'path';
+import { defineConfig } from 'vite';
+
+import react from '@vitejs/plugin-react';
 
 const HOST: string = process.env.HOST || "server1.localhost";
 const PORT: string = process.env.PORT || "4440";
@@ -37,9 +38,7 @@ export default defineConfig(({ command, mode }) => ({
   server: {
     open: INSIDE_CONTAINER ? undefined : "/",
     host: INSIDE_CONTAINER ? "0.0.0.0" : HOST,
-    port: parseInt(
-      CERT_KEY_FILE && fs.existsSync(CERT_KEY_FILE) ? PORT : "8000"
-    ),
+    port: parseInt(PORT),
     https:
       CERT_KEY_FILE &&
       fs.existsSync(CERT_KEY_FILE) &&
