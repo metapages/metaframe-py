@@ -312,21 +312,11 @@
         urlBlob.hash = setHashValueJsonInHashString(urlBlob.hash, key, value)
         return urlBlob.href
       }
-
-
     </script>
 
 
 
     <script>
-      // const stringToBase64String = (value) => {
-      //   return btoa(encodeURIComponent(value));
-      // };
-
-      // const blobToBase64String = (blob) => {
-      //   return stringToBase64String(JSON.stringify(blob));
-      // };
-
       const getQueryParamValueJsonFromWindow = (key) => {
         const url = new URL(window.location.href);
         const valueString = url.searchParams.get(key);
@@ -344,6 +334,123 @@
         }
         return undefined;
       };
+
+      // Dynamically add <script> and <link> tags to the document.head
+      // TODO: listen to the load events 
+      const ensureModulesLoaded = () => {
+        
+        
+        let modules = getHashParamValueJsonFromWindow("modules");
+        let resetUrlWithFixedModules = false;
+        if (!modules) {
+          let moduleString = new URL(window.location.href).searchParams.get("modules");
+          if (moduleString) {
+            modules = JSON.parse(stringFromBase64String(moduleString));
+            resetUrlWithFixedModules = true;
+          }
+        }
+
+        let v1Config;
+        if (!modules) {
+          v1Config = getQueryParamValueJsonFromWindow("c");
+          if (!v1Config) {
+            v1Config = getHashParamValueJsonFromWindow("c");
+          }
+          modules = v1Config?.modules;
+          if (modules) {
+            resetUrlWithFixedModules = true;
+          }
+        }
+
+        if (resetUrlWithFixedModules) {
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete("c");
+          newUrl.searchParams.delete("modules");
+
+          let currentHash = newUrl.hash;
+          currentHash = setHashValueJsonInHashString(currentHash, "modules", modules);
+          // TODO This works because we don't currently use config, but this will break stuff later
+          v1Config = v1Config || {};
+          delete v1Config.modules;
+          currentHash = setHashValueJsonInHashString(currentHash, "c", Object.keys(v1Config).length === 0 ? undefined : v1Config);
+          newUrl.hash = currentHash;
+          newUrl.searchParams.delete("v");
+          // drastic, force reload, this could be done better
+          window.history.replaceState(null, document.title, newUrl.href);
+        }
+
+        if (modules) {
+          let foundImportMap = false;
+          modules.forEach((s) => {
+            if (!foundImportMap && s.startsWith("{")) {
+              try {
+                const maybeImports = JSON.parse(decodeURIComponent(s));
+                if (maybeImports.imports) {
+                  var importMapElement = document.createElement("script");
+                  importMapElement.innerHTML = decodeURIComponent(s);
+                  importMapElement.type = "importmap";
+                  document
+                    .getElementsByTagName("head")[0]
+                    .appendChild(importMapElement);
+                  return;
+                }
+              } catch (e) {
+                console.log("error loading module", s);
+                return;
+              }
+
+            } else {
+              let elementTrimmed = s.trim();
+              if (elementTrimmed.startsWith("<link")) {
+                const href = /<link\s+.*href="([^"]*)"/.exec(elementTrimmed)?.[1];
+                if (href) {
+                  const linkImport = document.createElement("link");
+                  linkImport.href = href;
+                  const linkRel = /<link\s+.*rel="([^"]*)"/.exec(elementTrimmed)?.[1];
+                  if (linkRel) {
+                    linkImport.rel = linkRel;
+                  }
+                  const linkType = /<link\s+.*type="([^"]*)"/.exec(elementTrimmed)?.[1];
+                  if (linkType) {
+                    linkImport.type = linkType;
+                  }
+
+                  const linkCrossorigin = /<link\s+.*crossorigin="([^"]*)"/.exec(elementTrimmed)?.[1];
+                  if (linkCrossorigin) {
+                    linkImport.crossorigin = linkCrossorigin;
+                  }
+
+                  document.getElementsByTagName("head")[0].appendChild(linkImport);
+                }
+              } else if (elementTrimmed.startsWith("<script")) {
+                const src = /<script\s+.*src="([^"]*)"/.exec(elementTrimmed)?.[1];
+                if (src) {
+                  const scriptImport = document.createElement("script");
+                  scriptImport.src = src;
+                  const scriptType = /<script\s+.*type="([^"]*)"/.exec(
+                    elementTrimmed
+                  )?.[1];
+                  if (scriptType) {
+                    scriptImport.type = scriptType
+                  }
+                  const scriptCrossorigin = /<script\s+.*crossorigin="([^"]*)"/.exec(elementTrimmed)?.[1];
+                  if (scriptCrossorigin) {
+                    scriptImport.crossorigin = scriptCrossorigin;
+                  }
+                  document.getElementsByTagName("head")[0].appendChild(scriptImport);
+                }
+              } else {
+                // Assume it's a script
+                const scriptImport = document.createElement("script");
+                scriptImport.src = s;
+                document.getElementsByTagName("head")[0].appendChild(scriptImport);
+              }
+            }
+          });
+        }
+      }
+
+      ensureModulesLoaded();
 
       const getJsFromUrl = () => {
         const [prefix, hashParams] = getUrlHashParamsFromHashString(
@@ -368,114 +475,7 @@
         setHashParamInWindow("js", stringToBase64String(js));
       };
 
-      // Dynamcially add <script> and <link> tags to the document.head
-      let modules = getHashParamValueJsonFromWindow("modules");
-      let resetUrlWithFixedModules = false;
-      if (!modules) {
-        let moduleString = new URL(window.location.href).searchParams.get("modules");
-        if (moduleString) {
-          modules = JSON.parse(stringFromBase64String(moduleString));
-          resetUrlWithFixedModules = true;
-        }
-      }
-
-      let v1Config;
-      if (!modules) {
-        v1Config = getQueryParamValueJsonFromWindow("c");
-        if (!v1Config) {
-          v1Config = getHashParamValueJsonFromWindow("c");
-        }
-        modules = v1Config?.modules;
-        if (modules) {
-          resetUrlWithFixedModules = true;
-        }
-      }
-
-      if (resetUrlWithFixedModules) {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete("c");
-        newUrl.searchParams.delete("modules");
-
-        let currentHash = newUrl.hash;
-        currentHash = setHashValueJsonInHashString(currentHash, "modules", modules);
-        // TODO This works because we don't currently use config, but this will break stuff later
-        v1Config = v1Config || {};
-        delete v1Config.modules;
-        currentHash = setHashValueJsonInHashString(currentHash, "c", Object.keys(v1Config).length === 0 ? undefined : v1Config);
-        newUrl.hash = currentHash;
-        newUrl.searchParams.delete("v");
-        // drastic, force reload, this could be done better
-        window.history.replaceState(null, document.title, newUrl.href);
-      }
-
-      if (modules) {
-        let foundImportMap = false;
-        modules.forEach((s) => {
-          if (!foundImportMap && s.startsWith("{")) {
-            try {
-              const maybeImports = JSON.parse(decodeURIComponent(s));
-              if (maybeImports.imports) {
-                var importMapElement = document.createElement("script");
-                importMapElement.innerHTML = decodeURIComponent(s);
-                importMapElement.type = "importmap";
-                document
-                  .getElementsByTagName("head")[0]
-                  .appendChild(importMapElement);
-                return;
-              }
-            } catch (e) {
-              console.log("error loading module", s);
-              return;
-            }
-          } else if (s.endsWith(".js")) {
-            const scriptImport = document.createElement("script");
-            scriptImport.src = s;
-
-            document.getElementsByTagName("head")[0].appendChild(scriptImport);
-          } else {
-            let elementTrimmed = s.trim();
-            if (elementTrimmed.startsWith("<link")) {
-              const href = /<link\s+.*href="([^"]*)"/.exec(elementTrimmed)?.[1];
-              if (href) {
-                const linkImport = document.createElement("link");
-                linkImport.href = href;
-                const linkRel = /<link\s+.*rel="([^"]*)"/.exec(elementTrimmed)?.[1];
-                if (linkRel) {
-                  linkImport.rel = linkRel;
-                }
-                const linkType = /<link\s+.*type="([^"]*)"/.exec(elementTrimmed)?.[1];
-                if (linkType) {
-                  linkImport.type = linkType;
-                }
-
-                const linkCrossorigin = /<link\s+.*crossorigin="([^"]*)"/.exec(elementTrimmed)?.[1];
-                if (linkCrossorigin) {
-                  linkImport.crossorigin = linkCrossorigin;
-                }
-
-                document.getElementsByTagName("head")[0].appendChild(linkImport);
-              }
-            } else if (elementTrimmed.startsWith("<script")) {
-              const src = /<script\s+.*src="([^"]*)"/.exec(elementTrimmed)?.[1];
-              if (src) {
-                const scriptImport = document.createElement("script");
-                scriptImport.src = src;
-                const scriptType = /<script\s+.*type="([^"]*)"/.exec(
-                  elementTrimmed
-                )?.[1];
-                if (scriptType) {
-                  scriptImport.type = scriptType
-                }
-                const scriptCrossorigin = /<script\s+.*crossorigin="([^"]*)"/.exec(elementTrimmed)?.[1];
-                if (scriptCrossorigin) {
-                  scriptImport.crossorigin = scriptCrossorigin;
-                }
-                document.getElementsByTagName("head")[0].appendChild(scriptImport);
-              }
-            }
-          }
-        });
-      }
+      
 
       // TODO: do same as above (modules in hash params) for config
 
