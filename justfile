@@ -43,7 +43,7 @@ publish: _ensure_deployctl
   cp -r server/server.ts deploy/
   cp -r server/assets deploy/assets
   cd deploy
-  deployctl deploy --project=metaframe-js --prod server.ts
+  deployctl deploy --project=metaframe-py --prod server.ts
 
 # Delete all cached and generated files, and docker volumes
 clean:
