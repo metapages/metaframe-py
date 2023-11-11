@@ -16,10 +16,10 @@ import { ConfigOptions } from '../shared/config';
 
 export const useMetaframeUrl = () => {
   const [url, setUrl] = useState<string>();
-  const [code] = useHashParamBase64("js");
+  const [code] = useHashParamBase64("py");
   const [config] = useHashParamJson<ConfigOptions>("c");
   const [metaframeDef] = useHashParamJson<MetaframeDefinitionV6>("mfjson");
-  const [modules] = useHashParamJson<string[]>("modules");
+  // const [modules] = useHashParamJson<string[]>("modules");
   // update the url
   useEffect(() => {
     // const url = new URL(window.location.href);
@@ -28,9 +28,9 @@ export const useMetaframeUrl = () => {
     if (metaframeDef) {
       href = setHashValueJsonInUrl(href, "mfjson", metaframeDef);
     }
-    if (modules) {
-      href = setHashValueJsonInUrl(href, "modules", modules);
-    }
+    // if (modules) {
+    //   href = setHashValueJsonInUrl(href, "modules", modules);
+    // }
     if (config) {
       href = setHashValueJsonInUrl(href, "c", config);
     }
@@ -38,6 +38,8 @@ export const useMetaframeUrl = () => {
     const url = new URL(href);
 
     // I am not sure about this anymore
+    // We need this for the links and "copy URL" functionality to work
+    // because in development the URLs are different
     url.pathname = "";
     url.host = import.meta.env.VITE_SERVER_ORIGIN.split(":")[0];
     url.port = import.meta.env.VITE_SERVER_ORIGIN.split(":")[1];
@@ -47,7 +49,7 @@ export const useMetaframeUrl = () => {
     if (code) {
       url.hash = setHashValueInHashString(
         url.hash,
-        "js",
+        "py",
         stringToBase64String(code)
       );
     }
@@ -55,7 +57,7 @@ export const useMetaframeUrl = () => {
     // url.hash = setHashValueInHashString(url.hash, "c", null);
     // url.hash = setHashValueInHashString(url.hash, "v", null);
     setUrl(url.href);
-  }, [config, code, metaframeDef, modules, setUrl]);
+  }, [config, code, metaframeDef, setUrl]);
 
   return { url };
 };

@@ -11,23 +11,20 @@ import {
 } from 'https://esm.sh/@metapages/metapage@0.13.9';
 
 const port: number = parseInt(Deno.env.get("PORT") || "3000");
+const EDITOR_DEV_URL = Deno.env.get("EDITOR_DEV_URL")
 
 const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
   version: MetaframeVersionCurrent,
   metadata: {
-    name: "Javascript code runner",
+    name: "Python code runner",
     operations: {
       edit: {
         type: "url",
-        url: "https://js.mtfm.io/#?edit=1",
+        url: "https://pyiodide.mtfm.io/#?edit=1",
         params: [
           {
-            from: "js",
-            to: "js",
-          },
-          {
-            from: "modules",
-            to: "modules",
+            from: "py",
+            to: "py",
           },
           {
             from: "c",
@@ -43,14 +40,16 @@ const DEFAULT_METAFRAME_DEFINITION: MetaframeDefinitionV6 = {
 
 const DEFAULT_METAFRAME_DEFINITION_STRING = JSON.stringify(DEFAULT_METAFRAME_DEFINITION, null, 2);
 
-
-// const certFile = "../.certs/server1.localhost.pem",
-//   keyFile = "../.certs/server1.localhost-key.pem";
-
 const router = new Router();
 
 const serveIndex = async (ctx: Context) => {
-  const indexHtml = await Deno.readTextFile("./index.html");
+  let indexHtml = await Deno.readTextFile("./assets/index.html");
+  if (EDITOR_DEV_URL) {
+    indexHtml = indexHtml.replace(
+      'const EDITOR_DEV_URL = "";',
+      `const EDITOR_DEV_URL = "${EDITOR_DEV_URL}";`
+    );
+  }
   ctx.response.body = indexHtml;
 };
 
@@ -60,10 +59,11 @@ router.get("/metaframe.json", (ctx: Context) => {
   ctx.response.headers.set("Content-Type", "application/json");
   ctx.response.body = DEFAULT_METAFRAME_DEFINITION_STRING;
 });
-// After creating the router, we can add it to the app.
 
+// After creating the router, we can add it to the app.
 const app = new Application();
 app.use(oakCors({ origin: "*" }));
+
 app.use(
   staticFiles("editor", {
     prefix: "/editor",
@@ -75,5 +75,4 @@ app.use(
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-// await app.listen({ port, certFile, keyFile });
 await app.listen({ port });

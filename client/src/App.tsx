@@ -5,14 +5,11 @@ import { ButtonCopyExternalLink } from '/@/components/ButtoCopyExternalLink';
 import { ButtonGotoExternalLink } from '/@/components/ButtonGotoExternalLink';
 import { PanelCode } from '/@/components/PanelCode';
 import { PanelHelp } from '/@/components/PanelHelp';
-import { PanelModules } from '/@/components/PanelModules';
-import { PanelOptions } from '/@/components/PanelOptions';
 import { FiSettings } from 'react-icons/fi';
 
 import {
   EditIcon,
   InfoIcon,
-  PlusSquareIcon,
 } from '@chakra-ui/icons';
 import {
   HStack,
@@ -24,6 +21,8 @@ import {
   Tabs,
 } from '@chakra-ui/react';
 
+import { PanelOptions } from './components/options/PanelOptions';
+
 const HeaderHeight = "60px";
 export const App: React.FC = () => {
   return (
@@ -31,11 +30,11 @@ export const App: React.FC = () => {
       <Tabs w="100%" h="100%" isLazy={true}>
         <TabList bg="white" h={HeaderHeight}>
           <Tab>
-            <EditIcon /> &nbsp; Javascript
+            <EditIcon /> &nbsp; Python
           </Tab>
-          <Tab>
+          {/* <Tab>
             <PlusSquareIcon /> &nbsp; Modules
-          </Tab>
+          </Tab> */}
           <Tab>
             <FiSettings /> &nbsp; Options
           </Tab>
@@ -53,9 +52,9 @@ export const App: React.FC = () => {
           <TabPanel p="0px" h="100%">
             <PanelCode />
           </TabPanel>
-          <TabPanel p="0px" h="100%">
+          {/* <TabPanel p="0px" h="100%">
             <PanelModules />
-          </TabPanel>
+          </TabPanel> */}
           <TabPanel p="0px" m="0px" h="100%">
             <PanelOptions />
           </TabPanel>

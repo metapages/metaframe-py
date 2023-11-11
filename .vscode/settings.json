@@ -5,7 +5,17 @@
         "server"
     ],
     "files.exclude": {
-        "**/node_modules": true
-    }
+        "**/node_modules": true,
+        "client/dist": true,
+        "server/editor/assets": true
+    },
+    "files.watcherExclude": {
+        "server/editor/assets": true
+    },
+    "search.exclude": {
+        "client/dist": true,
+        "server/editor/assets": true
+    },
+    "css.format.enable": false
 
 }

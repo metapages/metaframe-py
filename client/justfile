@@ -12,7 +12,7 @@ export APP_FQDN                    := env_var_or_default("APP_FQDN", "server1.lo
 export APP_PORT                    := env_var_or_default("APP_PORT", "4430")
 export APP_PORT_BROWSER            := env_var_or_default("APP_PORT_BROWSER", "4440")
 # SERVER_ORIGIN allows overriding the target server origin for the browser
-export SERVER_ORIGIN               := env_var_or_default("SERVER_ORIGIN", "js.mtfm.io:443")
+export SERVER_ORIGIN               := env_var_or_default("SERVER_ORIGIN", "pyiodide.mtfm.io:443")
 # Always assume our current cloud ops image is versioned to the exact same app images we deploy
 export DOCKER_TAG                  := `if [ "${GITHUB_ACTIONS}" = "true" ]; then echo "${GITHUB_SHA}"; else echo "$(git rev-parse --short=8 HEAD)"; fi`
 # The NPM_TOKEN is required for publishing to https://www.npmjs.com

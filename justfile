@@ -41,7 +41,7 @@ publish: _ensure_deployctl
   mkdir -p deploy
   cp -r client/dist deploy/editor
   cp -r server/server.ts deploy/
-  cp -r server/index.html deploy/
+  cp -r server/assets deploy/assets
   cd deploy
   deployctl deploy --project=metaframe-js --prod server.ts
 

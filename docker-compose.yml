@@ -66,7 +66,7 @@ services:
 
   traefik:
     image: "traefik:v2.10.4"
-    container_name: "traefik-connect-metaframe-js"
+    container_name: "traefik-connect-metaframe-pyiodide"
     labels:
      - "traefik.enable=true"
      - "traefik.http.routers.traefik=true"

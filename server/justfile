@@ -1,12 +1,13 @@
-set shell          := ["bash", "-c"]
-set dotenv-load    := true
-export SERVER_PORT := env_var_or_default("SERVER_PORT", "3000")
-export APP_FQDN    := env_var_or_default("APP_FQDN", "server1.localhost")
+set shell               := ["bash", "-c"]
+set dotenv-load         := true
+export SERVER_PORT      := env_var_or_default("SERVER_PORT", "3000")
+export APP_FQDN         := env_var_or_default("APP_FQDN", "server1.localhost")
+export APP_PORT_BROWSER := env_var_or_default("APP_PORT_BROWSER", "4440")
 
 @_help:
     just --list --unsorted
 
 dev:
     deno run --allow-all --unstable HTTPS://deno.land/x/metapages@v0.0.17/exec/open_url.ts https://metapages.github.io/load-page-when-available/?url=http://${APP_FQDN}:${SERVER_PORT}
-    PORT={{SERVER_PORT}} APP_FQDN={{APP_FQDN}} deno run --watch -A --unstable server.ts
+    PORT={{SERVER_PORT}} APP_FQDN={{APP_FQDN}} EDITOR_DEV_URL={{APP_FQDN}}:{{APP_PORT_BROWSER}} deno run --watch -A --unstable server.ts
     

@@ -15,18 +15,15 @@ import { MetaframeInputMap } from '@metapages/metapage';
 import { MetaframeStandaloneComponent } from '@metapages/metapage-embed-react';
 
 export const PanelCode: React.FC = () => {
-  const [code, setCode] = useHashParamBase64("js");
+  const [code, setCode] = useHashParamBase64("py");
   const { url } = useMetaframeUrl();
 
-  // spacing={10}
   return (
     <HStack width="100%" justifyContent="flex-start" h="100%" spacing="0px">
       <VStack width="100%" alignItems="flex-start" bg="white" h="100%">
         <Box
           height="100%"
           width="100%"
-          // borderWidth="1px"
-          // p={2}
           rounded="md"
           overflow="scroll"
           className="transparent borderFatSolidOrange"
@@ -57,7 +54,7 @@ const LocalEditor: React.FC<{
   return (
     <MetaframeStandaloneComponent
       url={
-        "https://editor.mtfm.io/#?hm=disabled&options=JTdCJTIyYXV0b3NlbmQlMjIlM0F0cnVlJTJDJTIybW9kZSUyMiUzQSUyMmphdmFzY3JpcHQlMjIlMkMlMjJzYXZlbG9hZGluaGFzaCUyMiUzQXRydWUlMkMlMjJ0aGVtZSUyMiUzQSUyMnZzLWRhcmslMjIlN0Q="
+        "https://editor.mtfm.io/#?hm=disabled&options=JTdCJTIyYXV0b3NlbmQlMjIlM0F0cnVlJTJDJTIybW9kZSUyMiUzQSUyMnB5dGhvbiUyMiUyQyUyMnNhdmVsb2FkaW5oYXNoJTIyJTNBdHJ1ZSUyQyUyMnRoZW1lJTIyJTNBJTIydnMtZGFyayUyMiU3RA=="
       }
       inputs={inputs.current}
       onOutputs={onCodeOutputsUpdate}

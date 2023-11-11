@@ -1,7 +1,7 @@
 {
 	"version": "0.3",
 	"metadata": {
-		"title": "metaframe-py"
+		"title": "metaframe-template"
 	},
 	"inputs": {
 		"*": {

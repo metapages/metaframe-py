@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Metaframe JS</title>
+    
     <style>
       html,
       body {
@@ -12,7 +13,7 @@
         border: 0;
         /* No floating content on sides */
         display: block;
-        background:none transparent;
+        background: none transparent;
         /* background-color: blueviolet; */
       }
       .transparent {
@@ -40,7 +41,6 @@
         margin: 0px;
         width: 40px;
         height: 40px;
-        /* background-color: red; */
       }
 
       .container {
@@ -53,18 +53,14 @@
       }
 
       .container-with-editor {
-        /* display: flex;
-        flex-direction: row-reverse; */
         width: 100vw;
         height: 100vh;
-        /* justify-content: flex-start;
-        align-items: stretch;
-        gap: 0px; */
       }
 
       .root {
         width: 100%;
         max-width: 100%;
+        overflow-y: scroll;
       }
 
       .root-with-editor {
@@ -75,6 +71,7 @@
         max-width: 50%;
         height: calc(100vh - 60px);
         max-height: calc(100vh - 60px);
+        overflow-y: scroll;
       }
 
       /**
@@ -100,26 +97,37 @@
         width: 100%;
       }
 
-      /* .borderFatSolidGreen {
-        border: 5px solid green;
+      /* Base style for <pre> blocks */
+      .pre-stdout {
+        background-color: #f8f8f8; /* light grey background */
+        /* border: 1px solid #ccc; light grey border */
+        border-left: 3px solid #000; /* teal accent on the left */
+        /* padding: 10px; */
+        overflow: auto; /* in case of overflow */
+        font-family: 'Courier New', Courier, monospace; /* monospaced font */
+        white-space: pre-wrap; /* wrap white-space */
+        word-wrap: break-word; /* break long words */
+        margin: 0px;
       }
 
-      .borderDashedPurple {
-        border: 4px dashed purple;
+      /* Style for stderr to make it stand out */
+      .pre-stderr {
+        background-color: #fff0f0; /* light red background */
+        /* border: 1px solid #ffcccc; light red border */
+        border-left: 3px solid #e53935; /* darker red accent on the left */
+        color: #d32f2f; /* darker red text color */
+        /* padding: 10px; */
+        overflow: auto; /* in case of overflow */
+        font-family: 'Courier New', Courier, monospace; /* monospaced font */
+        white-space: pre-wrap; /* wrap white-space */
+        word-wrap: break-word; /* break long words */
+        margin: 0px;
       }
-
-      .borderDashedRed {
-        border: 2px dashed red;
-      }
-
-      .borderDashedBlue {
-        border: 2px dashed blue;
-      } */
     </style>
+    
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
 
-    <!-- Manually converted ts-js from https://github.com/metapages/hash-query/blob/main/src/lib/util.ts -->
     <script>
-
       const isIframe = () => {
         //http://stackoverflow.com/questions/326069/how-to-identify-if-a-webpage-is-being-loaded-inside-an-iframe-or-directly-into-t
         try {
@@ -292,31 +300,11 @@
         // replace after the ? but keep before that
         return `${preHashParamString}?${hashStringNew}`
       }
-
-      const setHashValueJsonInHashString = (hash, key, value) => {
-        const valueString = value ? blobToBase64String(value) : undefined
-        return setHashValueInHashString(hash, key, valueString)
-      }
-
-      // returns URL string
-      const setHashValueInUrl = (url, key, value) => {
-        const urlBlob = new URL(url)
-        const newHash = setHashValueInHashString(urlBlob.hash, key, value)
-        urlBlob.hash = newHash
-        return urlBlob.href
-      }
-
-      // returns URL string
-      const setHashValueJsonInUrl = (url, key, value) => {
-        const urlBlob = new URL(url)
-        urlBlob.hash = setHashValueJsonInHashString(urlBlob.hash, key, value)
-        return urlBlob.href
-      }
     </script>
 
-
-
     <script>
+      window.options = getHashParamValueJsonFromWindow("options") || {};
+
       const getQueryParamValueJsonFromWindow = (key) => {
         const url = new URL(window.location.href);
         const valueString = url.searchParams.get(key);
@@ -335,151 +323,88 @@
         return undefined;
       };
 
-      // Dynamically add <script> and <link> tags to the document.head
-      // TODO: listen to the load events 
-      const ensureModulesLoaded = () => {
-        
-        
-        let modules = getHashParamValueJsonFromWindow("modules");
-        let resetUrlWithFixedModules = false;
-        if (!modules) {
-          let moduleString = new URL(window.location.href).searchParams.get("modules");
-          if (moduleString) {
-            modules = JSON.parse(stringFromBase64String(moduleString));
-            resetUrlWithFixedModules = true;
-          }
+      window.showStdout = (s) => {
+        const root = document.getElementById("root");
+        const pre = document.createElement("pre");
+        pre.textContent = s;
+        pre.className = "pre-stdout";
+        root.appendChild(pre);
+        root.scrollTop = root.scrollHeight;
+      };
+
+      window.showStderr = (s) => {
+        const root = document.getElementById("root");
+        const pre = document.createElement("pre");
+        pre.textContent = s;
+        pre.className = "pre-stderr";
+        root.appendChild(pre);
+        root.scrollTop = root.scrollHeight;
+      };
+
+      window.saveInputsToPython = (inputs) => {
+        if (!inputs || Object.keys(inputs).length === 0) {
+          return;
         }
-
-        let v1Config;
-        if (!modules) {
-          v1Config = getQueryParamValueJsonFromWindow("c");
-          if (!v1Config) {
-            v1Config = getHashParamValueJsonFromWindow("c");
-          }
-          modules = v1Config?.modules;
-          if (modules) {
-            resetUrlWithFixedModules = true;
-          }
+        if (!window.pyodideInstance) {
+          // console.log("❗ Ignoring metaframe inputs because no window.pyodideInstance, but saving them")
+          window.metaframeInputs = {...window.metaframeInputs, ...inputs}
+          return;
         }
-
-        if (resetUrlWithFixedModules) {
-          const newUrl = new URL(window.location.href);
-          newUrl.searchParams.delete("c");
-          newUrl.searchParams.delete("modules");
-
-          let currentHash = newUrl.hash;
-          currentHash = setHashValueJsonInHashString(currentHash, "modules", modules);
-          // TODO This works because we don't currently use config, but this will break stuff later
-          v1Config = v1Config || {};
-          delete v1Config.modules;
-          currentHash = setHashValueJsonInHashString(currentHash, "c", Object.keys(v1Config).length === 0 ? undefined : v1Config);
-          newUrl.hash = currentHash;
-          newUrl.searchParams.delete("v");
-          // drastic, force reload, this could be done better
-          window.history.replaceState(null, document.title, newUrl.href);
-        }
-
-        if (modules) {
-          let foundImportMap = false;
-          modules.forEach((s) => {
-            if (!foundImportMap && s.startsWith("{")) {
-              try {
-                const maybeImports = JSON.parse(decodeURIComponent(s));
-                if (maybeImports.imports) {
-                  var importMapElement = document.createElement("script");
-                  importMapElement.innerHTML = decodeURIComponent(s);
-                  importMapElement.type = "importmap";
-                  document
-                    .getElementsByTagName("head")[0]
-                    .appendChild(importMapElement);
-                  return;
-                }
-              } catch (e) {
-                console.log("error loading module", s);
-                return;
-              }
-
+        const FS = window.pyodideInstance.FS;
+        Object.keys(inputs).forEach(key => {
+          // https://emscripten.org/docs/api_reference/Filesystem-API.html#id2
+          const value = inputs[key];
+          if (
+            value instanceof Int8Array ||
+            value instanceof Uint8Array ||
+            value instanceof Uint8ClampedArray ||
+            value instanceof Int16Array ||
+            value instanceof Uint16Array ||
+            value instanceof Int32Array ||
+            value instanceof Uint32Array ||
+            value instanceof Float32Array ||
+            value instanceof Float64Array
+          ) {
+            var stream = FS.open(`/inputs/${key}`, 'w+');
+            FS.write(stream, value, 0, value.length, 0);
+          } else {
+            if (typeof(value) === "object") {
+              FS.writeFile(`/inputs/${key}`, JSON.stringify(value), { encoding: "utf8" });
             } else {
-              let elementTrimmed = s.trim();
-              if (elementTrimmed.startsWith("<link")) {
-                const href = /<link\s+.*href="([^"]*)"/.exec(elementTrimmed)?.[1];
-                if (href) {
-                  const linkImport = document.createElement("link");
-                  linkImport.href = href;
-                  const linkRel = /<link\s+.*rel="([^"]*)"/.exec(elementTrimmed)?.[1];
-                  if (linkRel) {
-                    linkImport.rel = linkRel;
-                  }
-                  const linkType = /<link\s+.*type="([^"]*)"/.exec(elementTrimmed)?.[1];
-                  if (linkType) {
-                    linkImport.type = linkType;
-                  }
-
-                  const linkCrossorigin = /<link\s+.*crossorigin="([^"]*)"/.exec(elementTrimmed)?.[1];
-                  if (linkCrossorigin) {
-                    linkImport.crossorigin = linkCrossorigin;
-                  }
-
-                  document.getElementsByTagName("head")[0].appendChild(linkImport);
-                }
-              } else if (elementTrimmed.startsWith("<script")) {
-                const src = /<script\s+.*src="([^"]*)"/.exec(elementTrimmed)?.[1];
-                if (src) {
-                  const scriptImport = document.createElement("script");
-                  scriptImport.src = src;
-                  const scriptType = /<script\s+.*type="([^"]*)"/.exec(
-                    elementTrimmed
-                  )?.[1];
-                  if (scriptType) {
-                    scriptImport.type = scriptType
-                  }
-                  const scriptCrossorigin = /<script\s+.*crossorigin="([^"]*)"/.exec(elementTrimmed)?.[1];
-                  if (scriptCrossorigin) {
-                    scriptImport.crossorigin = scriptCrossorigin;
-                  }
-                  document.getElementsByTagName("head")[0].appendChild(scriptImport);
-                }
-              } else {
-                // Assume it's a script
-                const scriptImport = document.createElement("script");
-                scriptImport.src = s;
-                document.getElementsByTagName("head")[0].appendChild(scriptImport);
-              }
+              FS.writeFile(`/inputs/${key}`, value, { encoding: "utf8" });
             }
-          });
-        }
+          }
+        });
       }
 
-      ensureModulesLoaded();
-
-      const getJsFromUrl = () => {
+      const getPyFromUrl = () => {
         const [prefix, hashParams] = getUrlHashParamsFromHashString(
           window.location.hash
         );
-        let jsFromUrl = hashParams?.js;
+        let pyFromUrl = hashParams?.py;
 
-        // expecting js code via hash params, but that fails to embed in some places e.g. notion
-        // so also allow js from query params if none in hash params
-        if (!jsFromUrl) {
-          jsFromUrl = new URL(window.location.href).searchParams.get("js");
+        // expecting py code via hash params, but that fails to embed in some places e.g. notion
+        // so also allow py from query params if none in hash params
+        if (!pyFromUrl) {
+          pyFromUrl = new URL(window.location.href).searchParams.get("py");
         }
 
-        if (jsFromUrl) {
-          jsFromUrl = stringFromBase64String(jsFromUrl);
+        if (pyFromUrl) {
+          pyFromUrl = stringFromBase64String(pyFromUrl);
         }
 
-        return jsFromUrl;
+        return pyFromUrl;
       };
 
-      const setJsInUrl = (js) => {
-        setHashParamInWindow("js", stringToBase64String(js));
+      const setPyInUrl = (py) => {
+        setHashParamInWindow("py", stringToBase64String(py));
       };
 
-      
-
-      // TODO: do same as above (modules in hash params) for config
-
-      const runJsFromUrl = async () => {
+      const runPyFromUrl = async () => {
+        if (!window.pyodideInstance) {
+          // console.log("No window.pyodideInstance, skipping runPyFromUrl");
+          return;
+        }
         // if there is a scriptUnload function, run it
         // The previous script has the option to put a cleanup function on the window
         if (window.scriptUnload) {
@@ -489,27 +414,34 @@
             console.error("Error running window.scriptUnload()", err);
           }
         }
-        window.scriptUnload = null;
-        // clear all children of root (only can be there from user js code)
+        // window.scriptUnload = null;
+        // clear all children of root (only can be there from user py code)
         document.getElementById("root").textContent = "";
 
-        let js = getJsFromUrl();
-        
-        // BACKWARDS COMPATIBILITY
-        // /^(return\s+\(\)\s+=>\s+{)/
+        let py = getPyFromUrl();
 
+        if (py) {
+          try {
+            await window.pyodideInstance.runPythonAsync(py);
+            // Now get any files from /outputs and send them to the metaframe
+            // ONLY if we are in reload/restart mode
+            if (options["r"]) {
+              const FS = window.pyodideInstance.FS;
+              const outputFiles = FS.readdir("/outputs").filter(f => f !== "." && f !== "..");
+              // console.log('        outputFiles', outputFiles);
+              if (outputFiles.length > 0) {
 
-        if (js) {
-          // replace script element
-          if (document.getElementById("custom-exec-js")) {
-            document.getElementById("custom-exec-js").remove();
+                const metaframeOutputs = {};
+                outputFiles.forEach(f => {
+                  const _Uint8Array = FS.readFile(`/outputs/${f}`);
+                  metaframeOutputs[f] = _Uint8Array;
+                });
+                metaframe.setOutputs(metaframeOutputs);
+              }
+            }
+          } catch(err) {
+            window.showStderr(`${err}`);
           }
-
-          var scriptElement = document.createElement("script");
-          scriptElement.id = "custom-exec-js";
-          scriptElement.type = "module";
-          scriptElement.innerHTML = js;
-          document.body.appendChild(scriptElement);
         }
       };
 
@@ -531,10 +463,37 @@
       }
       var metaframe = window.metaframe;
 
-      // document.addEventListener("DOMContentLoaded", runJsFromUrl);
-      window.addEventListener("load", runJsFromUrl);
+      // If in reload mode, restart python script on new inputs
+      if (window.options["r"]) {
+        metaframe.onInputs(inputs => {
+          window.saveInputsToPython(inputs);
+          runPyFromUrl();
+        })
+      }
+
+      // document.addEventListener("DOMContentLoaded", runPyFromUrl);
+      window.addEventListener("load", runPyFromUrl);
       // reload on hash changes
-      window.addEventListener("hashchange",runJsFromUrl,false);
+      window.addEventListener("hashchange", runPyFromUrl, false);
+
+      (async () => {
+        let pyodide = await loadPyodide();
+        pyodide.setDebug(true);
+        pyodide.setStdout({batched: window.showStdout})
+        pyodide.setStderr({batched: window.showStderr})
+        await pyodide.loadPackage('micropip', window.showStdout);
+        await pyodide.loadPackage('ssl', window.showStdout);
+        await pyodide.loadPackage('setuptools', window.showStdout);
+        // https://emscripten.org/docs/api_reference/Filesystem-API.html#id2
+        pyodide.FS.mkdir('/inputs');
+        pyodide.FS.mkdir('/outputs');
+        window.pyodideInstance = pyodide;
+        if (options["r"]) {
+          window.saveInputsToPython(window.metaframeInputs);
+        }
+        runPyFromUrl();
+      })();
+      
     </script>
   </head>
   <body>
@@ -559,11 +518,14 @@
     </button>
     <script>
       
+      const EDITOR_DEV_URL = "";
+      const EDITOR_ORIGIN = EDITOR_DEV_URL ? `https://${EDITOR_DEV_URL}` : `${window.location.origin}/editor`;
+      const EDITOR_URL = `${EDITOR_ORIGIN}/#?c=eyJtb2R1bGVzIjpbXX0=`;
 
       const metapageDef = {
         metaframes: {
           editor: {
-            url: `${window.location.origin}/editor/#?c=eyJtb2R1bGVzIjpbXX0=`,
+            url: EDITOR_URL,
           },
         },
         version: "0.3",
@@ -585,7 +547,7 @@
           document.getElementById("container").className =
             "container borderDashedBlue";
           // console.log("found, removing/toggling OFF");
-          runJsFromUrl();
+          runPyFromUrl();
           return;
         }
 
@@ -613,12 +575,7 @@
         iframeDivContainer.appendChild(iframe);
 
         document.getElementById("container").prepend(iframeDivContainer);
-        runJsFromUrl();
-
-        // editorMetaframe.onOutput("text", (text) => {
-        //   setJsInUrl(text);
-        //   // runJsFromUrl();
-        // });
+        runPyFromUrl();
 
         let pending;
         const updateCode = (hash) => {
@@ -628,7 +585,6 @@
           pending = setTimeout(() => {
             pending = null;
             window.location.hash = hash;
-            // runJsFromUrl();
           }, 400);
         };
         mp.addListener(window.metapage.Metapage.DEFINITION, (event) => {
@@ -646,7 +602,7 @@
         .addEventListener("click", onMenuClick);
 
       // If there is no code, show the editor
-      if (!getJsFromUrl()) {
+      if (!getPyFromUrl()) {
         window.addEventListener("load", () => {
           onMenuClick();
         });
@@ -664,7 +620,8 @@
     </script>
 
     <div id="container" class="container borderDashedPurple transparent">
-      <div id="root" class="root borderFatSolidGreen transparent"></div>
+      <div id="root" class="root borderFatSolidGreen transparent">
+      </div>
     </div>
   </body>
 </html>
