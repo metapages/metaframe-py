@@ -323,7 +323,7 @@
         return undefined;
       };
 
-      window.showStdout = (s) => {
+      window.logStdout = (s) => {
         const root = document.getElementById("root");
         const pre = document.createElement("pre");
         pre.textContent = s;
@@ -331,8 +331,9 @@
         root.appendChild(pre);
         root.scrollTop = root.scrollHeight;
       };
+      window.log = logStdout;
 
-      window.showStderr = (s) => {
+      window.logStderr = (s) => {
         const root = document.getElementById("root");
         const pre = document.createElement("pre");
         pre.textContent = s;
@@ -440,7 +441,7 @@
               }
             }
           } catch(err) {
-            window.showStderr(`${err}`);
+            window.logStderr(`${err}`);
           }
         }
       };
@@ -479,11 +480,11 @@
       (async () => {
         let pyodide = await loadPyodide();
         pyodide.setDebug(true);
-        pyodide.setStdout({batched: window.showStdout})
-        pyodide.setStderr({batched: window.showStderr})
-        await pyodide.loadPackage('micropip', window.showStdout);
-        await pyodide.loadPackage('ssl', window.showStdout);
-        await pyodide.loadPackage('setuptools', window.showStdout);
+        pyodide.setStdout({batched: window.logStdout})
+        pyodide.setStderr({batched: window.logStderr})
+        await pyodide.loadPackage('micropip', window.logStdout);
+        await pyodide.loadPackage('ssl', window.logStdout);
+        await pyodide.loadPackage('setuptools', window.logStdout);
         // https://emscripten.org/docs/api_reference/Filesystem-API.html#id2
         pyodide.FS.mkdir('/inputs');
         pyodide.FS.mkdir('/outputs');

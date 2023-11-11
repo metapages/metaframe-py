@@ -78,6 +78,21 @@ proxy_scriptUnload = create_proxy(scriptUnload)
 window.scriptUnload = proxy_scriptUnload
 ```
 
+### Logging to the main div
+
+Some convenience functions:
+
+```py
+
+# log is the same as logStderr 
+from js import log, logStdout, logStderr
+
+# These functions only take a single string, no fancy formatting or multiple arguments
+log("some string")
+logStdout("some string")
+logStderr("some error")
+```
+
 ## Advanced
 
 - Testing, capabilities, development metapage: 
