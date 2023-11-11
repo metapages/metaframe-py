@@ -40,9 +40,11 @@ export const useMetaframeUrl = () => {
     // I am not sure about this anymore
     // We need this for the links and "copy URL" functionality to work
     // because in development the URLs are different
-    url.pathname = "";
-    url.host = import.meta.env.VITE_SERVER_ORIGIN.split(":")[0];
-    url.port = import.meta.env.VITE_SERVER_ORIGIN.split(":")[1];
+    if (import.meta.env.VITE_SERVER_ORIGIN) {
+      url.pathname = "";
+      url.host = import.meta.env.VITE_SERVER_ORIGIN.split(":")[0];
+      url.port = import.meta.env.VITE_SERVER_ORIGIN.split(":")[1];
+    }
 
     // WATCH THIS DIFFERENCE BETWEEN THIS AND BELOW
     // 1!
