@@ -97,6 +97,7 @@ logStderr("some error")
 
 - Testing, capabilities, development metapage: 
   - https://app.metapage.io/dion/py.mtfm.io-test/view
-- Example metapage running python with inputs and outputs:
+- Example metapage running python with inputs and outputs and plotting:
+  - https://app.metapage.io/dion/py.mtfm.io-example-01
 
 
